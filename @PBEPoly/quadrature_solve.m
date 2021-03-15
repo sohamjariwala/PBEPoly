@@ -23,19 +23,15 @@ for i = 1:length(mu)
    gamma(i) = mu(i)/mu(1)^(2-i)/mu(2)^(i-1);
 end
 
-F = @(x) ([    1,      1,      1;
-          x(1)^1, x(2)^1, x(3)^1;
-          x(1)^2, x(2)^2, x(3)^2;
-          x(1)^3, x(2)^3, x(3)^3;
-          x(1)^4, x(2)^4, x(3)^4;
-          x(1)^5, x(2)^5, x(3)^5] * [x(4); x(5); x(6)])./gamma(1:6)' - 1;
+solveThis = @(x)  jQuadsolve(x, gamma);
 
 % Nonlinear solver
 options = optimset('TolFun', eps, 'TolX', eps, 'Display', 'off');
+optimoptions(@lsqnonlin,'SpecifyObjectiveGradient',true);
 
 [x_sol,~,~,~] = ...                      %[x_sol,RESNORM,RESIDUAL,EXITFLAG]
-       lsqnonlin(F, ...
-      [32.3027; ...
+lsqnonlin(solveThis, ...
+  [32.3027; ...
     0.2894; ...
   530.8157; ...
     0.0238; ...
@@ -52,4 +48,23 @@ options = optimset('TolFun', eps, 'TolX', eps, 'Display', 'off');
   A = sortrows([radius weights], 1);
   L = A(:,1);
   W = A(:,2);
+  
+function [F2, Jacobian] = jQuadsolve(x, gamma)
+F2 =     ([    1,      1,      1;
+              x(1)^1, x(2)^1, x(3)^1;
+              x(1)^2, x(2)^2, x(3)^2;
+              x(1)^3, x(2)^3, x(3)^3;
+              x(1)^4, x(2)^4, x(3)^4;
+              x(1)^5, x(2)^5, x(3)^5] * [x(4); x(5); x(6)])./gamma(1:6)' - 1;
+
+    if nargout > 1
+        Jacobian = zeros(6,6);    
+        for i = 1:6
+                Jacobian(i,1:3) = (i-1)*[x(4) x(5) x(6)]/gamma(i);
+                Jacobian (i, 4:6) = [x(1) x(2) x(3)].^(i-1)/gamma(i);
+        end
+    end
+end
+
+  
 end
