@@ -23,20 +23,24 @@ for i = 1:length(mu)
    gamma(i) = mu(i)/mu(1)^(2-i)/mu(2)^(i-1);
 end
 
-F = @(x) ((sum(diag([x(4), x(5), x(6)])*...
-              [1, 1, 1;
-              x(1)^1, x(2)^1, x(3)^1;
-              x(1)^2, x(2)^2, x(3)^2;
-              x(1)^3, x(2)^3, x(3)^3;
-              x(1)^4, x(2)^4, x(3)^4;
-              x(1)^5, x(2)^5, x(3)^5]') - gamma(1:6))./gamma(1:6))';
+F = @(x) ([    1,      1,      1;
+          x(1)^1, x(2)^1, x(3)^1;
+          x(1)^2, x(2)^2, x(3)^2;
+          x(1)^3, x(2)^3, x(3)^3;
+          x(1)^4, x(2)^4, x(3)^4;
+          x(1)^5, x(2)^5, x(3)^5] * [x(4); x(5); x(6)])./gamma(1:6)' - 1;
 
 % Nonlinear solver
 options = optimset('TolFun', eps, 'TolX', eps, 'Display', 'off');
 
 [x_sol,~,~,~] = ...                      %[x_sol,RESNORM,RESIDUAL,EXITFLAG]
        lsqnonlin(F, ...
-       [0.80, 3.0, 10.1, 0.92, 0.08, 8e-4]', ...  % Init value
+      [32.3027; ...
+    0.2894; ...
+  530.8157; ...
+    0.0238; ...
+    0.9737; ...
+    0.0000], ...  % Init value
        zeros(6,1), ...                            % Lower bound
        [inf inf inf 1 1 1]', ...                  % Upper bound
        options);
