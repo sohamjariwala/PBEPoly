@@ -1,15 +1,14 @@
-function dX = mwasameModel(obj, t, X, shear_rate)
+function dX = mwasameModel(obj, t, X, shear_rate, logintMu)
 % Microstructure evolution through population balances   
     dX = zeros(size(X));
 
     phi_a = obj.cnst.phi_p*(X(1)/obj.par.m_p)^(1-3/obj.par.d_f);
     nu      = X(1);
-    gamma_e = X(2);
 
         % Brownian aggregation term
         brownianAggregation = ...
             -2 * cutOff(obj, phi_a) * obj.cnst.k_b * obj.cnst.T * obj.cnst.phi_p ...
-           ./( 2 * obj.cnst.mu_s * eta(obj, phi_a) * obj.par.W * pi * obj.cnst.a_p^3) ...
+           ./( 2 * obj.cnst.mu_s * eta(obj, phi_a, logintMu) * obj.par.W * pi * obj.cnst.a_p^3) ...
            .* (nu/obj.par.m_p)^(2)*obj.par.m_p;
 
        % Shear aggregation term
@@ -30,10 +29,4 @@ function dX = mwasameModel(obj, t, X, shear_rate)
         dX(1) = (brownianAggregation + ...
                 shearAggregation + ...
                 shearBreakage);
-
-    % ODE for elastic strain
-    gamma_e = min([gamma_e, obj.gamma_lin]);
-    dX(2) = (shear_rate - gamma_e./obj.tau( phi_a, shear_rate, gamma_e));
-
-
 end

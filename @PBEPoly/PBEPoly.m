@@ -1,6 +1,6 @@
 classdef PBEPoly
 % A rheological constitutive model for carbon black via population
-% balances using monodisperse closure.
+% balances.
     
 %% Parameters    
     properties 
@@ -11,10 +11,9 @@ classdef PBEPoly
             'b_0' , [], ...             % Breakage constant
             'd_f' , [], ...             % Fractal dimension
             'porosity', [], ...         % R_h/R_a
-            'm_p', [], ...              % #(particles) in a primary cluster
-            'bexp', [] ...
+            'm_p', []...                % #(particles) in a primary cluster
             );
-        
+  
        % Constants that will remain fix throughout the computation.
        cnst = struct(... 
             'phi_p'    , [], ...        % particle volume fraction
@@ -32,6 +31,24 @@ classdef PBEPoly
     end
 %% Functions describing rheological variables
     methods
+        function obj = PBEPoly(obj)
+          obj.par.W = 0.008998930690468;
+          obj.par.alfa = 0.665487794544652;
+          obj.par.b_0 = 0.003742494709682;
+          obj.par.d_f = 2.11;
+          obj.par.porosity = 0.92;
+          obj.par.m_p = 468;
+          
+          obj.cnst.phi_p = 0.03;
+          obj.cnst.a_p = 8e-9;
+          obj.cnst.mu_s = 0.41;
+          obj.cnst.G_0 = 450;
+          obj.cnst.sigma_y0 = 11;
+          obj.cnst.phi_max = 0.64;
+          obj.cnst.k_b = 1.3806e-23;
+          obj.cnst.T = 298.15;
+          obj = inverseOfA(obj);
+        end
                 
         function x = get.gamma_lin(obj)
         % Limit of linearity of elastic strain
@@ -39,7 +56,7 @@ classdef PBEPoly
         end
         
         function x = get.phi_pc(obj)
-        % Minimum allowable volume fraction of aggregates    
+        % Minimum allowable volume fraction of aggregates
             x = obj.cnst.phi_p*obj.par.m_p^(3/obj.par.d_f-1);
         end
 
@@ -49,29 +66,29 @@ classdef PBEPoly
         end
         
         function x = phi_a(obj, logintMu)
-            x = obj.cnst.phi_p*exp(logintMu(1))^(1-3/obj.par.d_f);
+        % Volume fraction computed from the moments of the distribution
+            c = obj.MOMIC(logintMu);
+            x = obj.cnst.phi_p*obj.fra_moment(3/obj.par.d_f,c);
         end
                 
         function x = cutOff(obj, logintMu)
         % Hyperbolic cutoff function to model dynamic arrest
             phi_a = obj.phi_a(logintMu);
-            x = tanh(2.65 * (obj.phi_max(logintMu) - phi_a)...
-                        ./ (obj.phi_max(logintMu) - obj.phi_pc));
+
+       x = ((obj.phi_max(logintMu) - phi_a)...
+         ./ (obj.phi_max(logintMu) - obj.phi_pc))^(2/(3-obj.par.d_f));
+        
         end
         
-        function x = phi_max(obj, logintMu)
+        function x = phi_max(~, logintMu)
         % Maximum packing fraction as a function of moments (polydisperse)
-            c=obj.MOMIC(logintMu);
-            phi_rcp = obj.cnst.phi_max;
-            df = obj.par.d_f;
-            
-            fra_moment = @(j,c) obj.fra_moment(j,c);
-            
-            x = phi_rcp* ...
-                exp(0.2* ...
-                sqrt( log( ...
-                fra_moment(4/df,c)*fra_moment(2/df,c)/fra_moment(3/df,c)...
-                )));
+            Mu = exp(logintMu); Mu = [Mu(1) 1 Mu(2:end)];
+            sigma = sqrt(log( ...
+                Mu(4)*Mu(2)/Mu(3)^2 ...
+                ));
+   
+            x =  1-0.57*exp(-sigma) + 0.2135*exp(-0.57*sigma/0.2135) ...
+            + 0.0019*(cos(2*pi*(1-exp(-0.75*sigma.^0.7 - 0.0025*sigma.^4)))-1);
         end
         
         function x = eta(obj, phi, logintMu)
@@ -85,8 +102,8 @@ classdef PBEPoly
         
         function x = G(obj, logintMu)
         % Elastic modulus based on Shih et al. strong link regime
-        x = obj.cnst.G_0.*((obj.phi_a(logintMu) - obj.cnst.phi_p)...
-         ./(obj.phi_max(logintMu) - obj.cnst.phi_p)).^(2/(3-obj.par.d_f));
+        x = obj.cnst.G_0.*((obj.phi_a(logintMu) - obj.phi_pc)...
+         ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
         end
         
         function x = elastic_stress(obj, logintMu, gamma_e)
@@ -114,11 +131,13 @@ classdef PBEPoly
     end 
 %% Stress responses
     methods
-        out = steadyShear(obj, shear_rate)
+        out = steadyShear(obj, shear_rate, initialConditions)
         
-        out = stepShear(obj, initialShearRate, finalShearRate, time)
+        out = steadyShearODE(obj, shear_rate, initialConditions)
         
-        out = UDLAOS(obj, gamma_0, omega, time)
+        out = stepShear(obj, initialShearRate, finalShearRate, time, init)
+        
+        out = UDLAOS(obj, gamma_0, omega, time, init)
         
         out = stressResponse(obj, initialShearRate, shearRate, time)
     end
@@ -127,22 +146,25 @@ classdef PBEPoly
         % MOMIC
         function x = MOMIC(obj, logintMu)
         %Using MOMIC Method to find the coefficients from integer moments
+   
             x=obj.lnvA*(logintMu');
-        end
         
-         function x = get.lnvA(~)
+        end
+
+        function obj = inverseOfA(obj)
          % Create the A matrix for 
-            K=9;
+            K=5;
             A=zeros(K,K);
-            j=[0,2,3,4,5,6,7,8,9];
+            j=[0,2:K];
             k=j;
                 for a=1:K
                     for b=1:K
                          A(a,b)=j(a)^k(b)-j(a);
                     end 
                 end  
-            x=inv(A);
+            obj.lnvA=inv(A);
          end
+
         
          function x = fra_moment(~,j,c)
          % Fractional moments
@@ -162,11 +184,11 @@ classdef PBEPoly
             x=p*gamma(q+k)/gamma(q)*gamma(q+r)/gamma(q+r+k);
          end
          
-         function x=InitialCondition(~)
-            % Default initial guess for the 9 moments
-            mn=600;
+         function x=InitialCondition(obj)
+            % Default initial guess for the 6 moments
+            mn=obj.par.m_p;
             %assuming initially monodisperse
-            gam=[1,1,1,1,1,1,1,1,1,1];
+            gam=[1,1,1,1,1,1];
             K=length(gam);
             initialMu=zeros(size(gam));
             for k=1:K
@@ -174,15 +196,19 @@ classdef PBEPoly
             end 
             initialMu(2)=[];
             x=log(initialMu);
+            
+            x = [-6.25110100853817,6.41246911055548,13.0939250626287,...
+                20.1093488862100,27.4657119034575];
+            
          end
 
          % Microstructure evolution through population balances   
-         f = momicDerivative9(obj, t, shearRate,logintMu);
+         f = momicDerivative5(obj, t, shearRate,logintMu);
          
          % Elastic strain
          dX = elasticStrain(obj, ~, gamma_e, shearRate, logintMu)
          
          % Shear rate corresponding to steady shear structure 
-         x = structure_shear_rate(obj, phi_a, shear_rate)
+         x = structure_shear_rate(obj, shearRate, logintMu)
    end
 end

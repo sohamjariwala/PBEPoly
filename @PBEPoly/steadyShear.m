@@ -1,22 +1,25 @@
-function out = steadyShear(obj, shear_rate)
+function out = steadyShear(obj, shear_rate, initialConditions)
 % Steady shear stress calculation
  try
     % Solving for steady state using MATLAB fsolve
-    fun = @(x) mwasameModelSS(obj, x, shear_rate);
-    options = optimset('Display','off');
-
-    [out.phi_a,~,out.EXITFLAG,~,~] = fsolve(fun, obj.phi_pc, options);
-
-    % Output variables
-    out.gamma_e = sqrt(shear_rate/...
-        obj.structure_shear_rate(out.phi_a, shear_rate))*obj.gamma_lin;
+    fun = @(x) momicDerivative5(obj, 0, x, shear_rate);
+    options = optimoptions('fsolve','TolFun', eps, 'Display','off', 'FunctionTolerance', eps);
     
-    out.stress = total_stress(obj, out.phi_a, out.gamma_e, shear_rate);
-    out.G = obj.G(out.phi_a);
+    if nargin > 2
+        [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, initialConditions, options);
+    else
+        [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, obj.InitialCondition, options);
+    end
+    
+    % Output variables
+    out.gamma_e = obj.gamma_lin;
+    out.stress = total_stress(obj, out.logintMu, out.gamma_e, shear_rate);
+    out.G = obj.G(out.logintMu);
  catch
-    out.stress = zeros(size(shear_rate));
-    out.phi_a = zeros(size(shear_rate));
-    out.gamma_e = zeros(size(shear_rate));
+    out.stress = 10^6*ones(size(shear_rate));
+    out.phi_a = 10^6*ones(size(shear_rate));
+    out.gamma_e = 10^6*ones(size(shear_rate));
+    out.logintMu=zeros(length(shear_rate), 5);
     out.EXITFLAG = -10;
  end
 end

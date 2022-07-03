@@ -4,6 +4,7 @@ function eta = etaTrimodal(obj, logintMu)
 % effects of polydispersity on the viscosity of noncolloidal hard sphere
 % suspensions"
 
+try 
     [L, W] = quadrature_solve(obj, logintMu);
 
     d = L(1); D = L(2); DD = L(3);
@@ -29,4 +30,7 @@ function eta = etaTrimodal(obj, logintMu)
          + fu(phi_d)*(1-beta1);
     
      eta = exp(fTri);
+catch
+    eta = 10^6; 
+end
 end
