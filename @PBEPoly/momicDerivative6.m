@@ -1,5 +1,5 @@
 function f = momicDerivative6(obj, t, logintMu, shearRate)
-% Derivatives of the 6 integer moments to be used in method of moments with
+% Derivatives of the 7 integer moments to be used in method of moments with
 % interpolative closure (MOMIC).
 
 intMu=exp(logintMu); 

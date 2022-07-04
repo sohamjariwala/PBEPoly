@@ -17,7 +17,7 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
     tstart = tic;
     odeopts = odeset('RelTol',1e-6,'AbsTol', 1e-6, 'Stats','off', 'Events',@(t,X) myEvent(t,X,tstart));
     % Solving for transient state at specified times
-    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', shear_rate(t)); 
+    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), shear_rate(t), X(1:numMoments)')); 
                    obj.elasticStrain(t, X(end), shear_rate(t), X(1:numMoments)')];
 try
     % Set a timer to stop long executions           

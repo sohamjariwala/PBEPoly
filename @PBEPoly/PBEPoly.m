@@ -102,8 +102,9 @@ classdef PBEPoly
         
         function x = G(obj, logintMu)
         % Elastic modulus based on Shih et al. strong link regime
+        d_b = 1; % backbone fractal dimension
         x = obj.cnst.G_0.*((obj.phi_a(logintMu) - obj.phi_pc)...
-         ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
+         ./(obj.phi_max(logintMu) - obj.phi_pc)).^((2)/(3-obj.par.d_f));
         end
         
         function x = elastic_stress(obj, logintMu, gamma_e)
@@ -111,15 +112,30 @@ classdef PBEPoly
             x = obj.G(logintMu).*gamma_e;
         end
         
-        function x = viscous_stress(obj, logintMu, shear_rate)
-        % Viscous stress
-            x = obj.cnst.mu_s.*obj.etaTrimodal(logintMu).*shear_rate;
+        function x = gamma_dot_p(obj, gamma_e, shearRate, logintMu)
+        % Plastic deformation rate
+            gamma_e_max = obj.gamma_e_max(logintMu);
+            x = shearRate/(2 - sign(shearRate)*gamma_e/gamma_e_max);
         end
         
-        function x = total_stress(obj, logintMu, gamma_e, shear_rate)
+        function x = gamma_e_max(obj, logintMu)
+        % Maximum elastic strain for a state
+            d_b = 1; % backbone fractal dimension
+            phi = obj.phi_a(logintMu);
+            d_f = obj.par.d_f;
+            x = obj.gamma_lin*((phi - obj.phi_pc)...
+               ./(obj.phi_max(logintMu)- obj.phi_pc)).^((d_b+1)/(3-d_f));
+        end
+        
+        function x = viscous_stress(obj, logintMu, shearRate)
+        % Viscous stress
+            x = obj.cnst.mu_s.*obj.etaTrimodal(logintMu).*shearRate;
+        end
+        
+        function x = total_stress(obj, logintMu, gamma_e, shearRate)
         % Total stress
            x =  obj.elastic_stress(logintMu, gamma_e) ...
-              + obj.viscous_stress(logintMu, shear_rate);
+              + obj.viscous_stress(logintMu, shearRate);
         end
         
         function x = tau(obj, logintMu, gamma_e)
@@ -131,9 +147,9 @@ classdef PBEPoly
     end 
 %% Stress responses
     methods
-        out = steadyShear(obj, shear_rate, initialConditions)
+        out = steadyShear(obj, shearRate, initialConditions)
         
-        out = steadyShearODE(obj, shear_rate, initialConditions)
+        out = steadyShearODE(obj, shearRate, initialConditions)
         
         out = stepShear(obj, initialShearRate, finalShearRate, time, init)
         
