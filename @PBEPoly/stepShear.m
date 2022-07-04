@@ -10,7 +10,9 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
     if nargin < 5
     % Value at initial steady state
     init = obj.steadyShear(initialShearRate);
+    init.gamma_e = obj.gamma_e_max(init.logintMu);
     end
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 %% Solving the system of ODEs
     % Setting tolerance for ODEs
@@ -18,13 +20,13 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
     odeopts = odeset('RelTol',1e-6,'AbsTol', 1e-6, 'Stats','off', 'Events',@(t,X) myEvent(t,X,tstart));
     % Solving for transient state at specified times
     fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), shear_rate(t), X(1:numMoments)')); 
-                   obj.elasticStrain(t, X(end), shear_rate(t), X(1:numMoments)')];
-try
-    % Set a timer to stop long executions           
+                   obj.elasticStrain(t, X(end-1), shear_rate(t), X(1:numMoments)');
+                   obj.shearStressDE(t, X(end), X(end-1), shear_rate(t), X(1:numMoments)')];
+%try
               
     out.sol = ode15s(fun, ...
         [0, time(end)], ...
-        [init.logintMu, init.gamma_e],...%[loginitialMu, obj.gamma_lin]
+        [init.logintMu, init.gamma_e, init.stress],...
         odeopts);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -36,8 +38,9 @@ try
 
         out.logintMu = sol_Eval(1:numMoments,:)'; 
         out.phi_a = obj.phi_a(out.logintMu);
-        out.gamma_e = sol_Eval(end,:)';
-        out.gamma_e_dot = derivatives(end,:)';
+        out.gamma_e = sol_Eval(end-1,:)';
+        out.gamma_e_dot = derivatives(end-1,:)';
+        out.stress = sol_Eval(end,:)';
 
         [~, msgid] = lastwarn;
             if strcmp(msgid, 'MATLAB:illConditionedMatrix') || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
@@ -50,33 +53,30 @@ try
         out.time = time;
         out.logintMu = sol_Eval(1:numMoments,:)'; 
         out.phi_a = obj.phi_a(out.logintMu);
-        out.gamma_e = sol_Eval(end,:)';
-        out.gamma_e_dot = derivatives(end,:)';
+        out.gamma_e = sol_Eval(end-1,:)';
+        out.gamma_e_dot = derivatives(end-1,:)';
+        out.stress = sol_Eval(end,:)';
         
     end
     
-catch
-    warning('Problem evaluating ODE:STEPSHEAR');
-    out.phi_a = 10^6*ones(size(time));
-    out.logintMu = init.logintMu*ones(numMoments,length(time));
-    out.gamma_e = 10^6*ones(size(time));
-    lastwarn('')
-    out.EXITFLAG = -10;
-    out.stress = 10^6*ones(size(time));
-    out.elastic_comp = 10^6*ones(size(time));
-    return
-end
+% catch
+%     warning('Problem evaluating ODE:STEPSHEAR');
+%     out.phi_a = 10^6*ones(size(time));
+%     out.logintMu = init.logintMu*ones(numMoments,length(time));
+%     out.gamma_e = 10^6*ones(size(time));
+%     lastwarn('')
+%     out.EXITFLAG = -10;
+%     out.stress = 10^6*ones(size(time));
+%     out.elastic_comp = 10^6*ones(size(time));
+%     return
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Output variables
     for i = 1:length(time)
     % Computing overall macroscopic stress
-    out.stress(i) = obj.total_stress(out.logintMu(i,:), ...
-                                  out.gamma_e(i), ...
-                                  shear_rate(time(i)));
     out.elastic_comp(i) = obj.elastic_stress(out.logintMu(i,:),out.gamma_e(i));
     end
-    out.stress = out.stress';
     out.elastic_comp = out.elastic_comp';
 end
 

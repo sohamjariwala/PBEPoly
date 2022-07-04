@@ -1,4 +1,4 @@
-function dX = elasticStrain(obj, ~, gamma_e, shearRate, logintMu)
+function dX = elasticStrain(obj, t, gamma_e, shearRate, logintMu)
 gamma_max = obj.gamma_e_max(logintMu);
     
 % dX = shearRate*(1 - obj.structure_shear_rate(shearRate,logintMu)/shearRate*(gamma_e/gamma_max)^4);
@@ -9,7 +9,7 @@ d_f = obj.par.d_f;
 Mu = exp(logintMu);
 mu0 = Mu(1);
 
-dgamma_maxdt = -obj.phi_p*obj.gamma_lin*2/d_f*((phi - obj.phi_pc)).^((df-1)/(3-df))...
+dgamma_maxdt = -obj.cnst.phi_p*obj.gamma_lin*2/d_f*((phi - obj.phi_pc)).^((d_f-1)/(3-d_f))...
    ./(obj.phi_max(logintMu)- obj.phi_pc).^((2)/(3-d_f))*mu0^(-3/d_f) ...
    .*mwasameModel(obj, t, mu0, shearRate, logintMu);
 

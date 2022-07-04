@@ -226,5 +226,8 @@ classdef PBEPoly
          
          % Shear rate corresponding to steady shear structure 
          x = structure_shear_rate(obj, shearRate, logintMu)
+
+         % Shear stress DE corresponding to the Saramito model
+         dX = shearStressDE(obj, t, sigma, gamma_e, shearRate, logintMu)
    end
 end

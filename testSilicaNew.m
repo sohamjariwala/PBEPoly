@@ -122,6 +122,7 @@ toc;
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(shear_rate, logintMu, 5);
 initial.gamma_e = obj.gamma_lin;
+initial.stress = interp1(shear_rate, stress,5);
 % Step down
 tic; SD1 = stepShear(obj, iSD1, fSD1, time, initial); toc;
 tic; SD2 = stepShear(obj, iSD2, fSD2, time, initial); toc;
