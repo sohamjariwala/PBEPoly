@@ -9,7 +9,7 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
 %% Obtaining initial conditions
     if nargin < 5
     % Value at initial steady state
-    init = obj.steadyShear(initialShearRate);
+    init = obj.steadyShearODE(initialShearRate);
     init.gamma_e = obj.gamma_e_max(init.logintMu);
     end
 
@@ -19,10 +19,10 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
     tstart = tic;
     odeopts = odeset('RelTol',1e-6,'AbsTol', 1e-6, 'Stats','off', 'Events',@(t,X) myEvent(t,X,tstart));
     % Solving for transient state at specified times
-    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), shear_rate(t), X(1:numMoments)')); 
+    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end-1), shear_rate(t), X(1:numMoments)')); 
                    obj.elasticStrain(t, X(end-1), shear_rate(t), X(1:numMoments)');
                    obj.shearStressDE(t, X(end), X(end-1), shear_rate(t), X(1:numMoments)')];
-%try
+try
               
     out.sol = ode15s(fun, ...
         [0, time(end)], ...
@@ -34,42 +34,52 @@ function out = stepShear(obj, initialShearRate, finalShearRate, time, init)
 
     % Obtaining solution variables
     if length(time) > 2
-        [sol_Eval, derivatives] = deval(out.sol, time);
-
-        out.logintMu = sol_Eval(1:numMoments,:)'; 
-        out.phi_a = obj.phi_a(out.logintMu);
-        out.gamma_e = sol_Eval(end-1,:)';
-        out.gamma_e_dot = derivatives(end-1,:)';
-        out.stress = sol_Eval(end,:)';
-
         [~, msgid] = lastwarn;
             if strcmp(msgid, 'MATLAB:illConditionedMatrix') || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
                 error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
             end
         lastwarn('')
+        
+        [sol_Eval, derivatives] = deval(out.sol, time);
+
+        out.logintMu = sol_Eval(1:numMoments,:)'; 
+        out.gamma_e = sol_Eval(end-1,:)';
+        out.gamma_e_dot = derivatives(end-1,:)';
+        for i = 1:length(time)
+            out.phi_a(i) = obj.phi_a(out.logintMu(i,:));
+            out.stress(i) = sol_Eval(end,i)';
+        end
+
     else
+        [~, msgid] = lastwarn;
+            if strcmp(msgid, 'MATLAB:illConditionedMatrix') || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
+                error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
+            end
+        lastwarn('')
+        
         [sol_Eval, derivatives] = deval(out.sol, out.sol.x);
         time = out.sol.x;
         out.time = time;
         out.logintMu = sol_Eval(1:numMoments,:)'; 
-        out.phi_a = obj.phi_a(out.logintMu);
         out.gamma_e = sol_Eval(end-1,:)';
         out.gamma_e_dot = derivatives(end-1,:)';
-        out.stress = sol_Eval(end,:)';
-        
+        for i = 1:length(time)
+            out.phi_a(i) = obj.phi_a(out.logintMu(i,:));
+            out.stress(i) = sol_Eval(end,i)';
+        end      
     end
-    
-% catch
-%     warning('Problem evaluating ODE:STEPSHEAR');
-%     out.phi_a = 10^6*ones(size(time));
-%     out.logintMu = init.logintMu*ones(numMoments,length(time));
-%     out.gamma_e = 10^6*ones(size(time));
-%     lastwarn('')
-%     out.EXITFLAG = -10;
-%     out.stress = 10^6*ones(size(time));
-%     out.elastic_comp = 10^6*ones(size(time));
-%     return
-% end
+
+catch
+    warning('Problem evaluating ODE:STEPSHEAR');
+    out.phi_a = 10^6*ones(size(time));
+    out.logintMu = init.logintMu*ones(numMoments,length(time));
+    out.gamma_e = 10^6*ones(size(time));
+    lastwarn('')
+    out.EXITFLAG = -10;
+    out.stress = 10^6*ones(size(time));
+    out.elastic_comp = 10^6*ones(size(time));
+    return
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Output variables

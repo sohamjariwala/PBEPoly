@@ -1,6 +1,7 @@
 %% Starting point
 % parVec = [3.018240e+00, 5.848876e-01, -6.412818e+00, 2.272982e+00, 8.816055e-01, 5.944847e+00, 3.712128e+01, 7.804288e-01, 3.360543e-01];
 parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.268634081422561   0.883034591106096   5.953417691287351  37.277275082280944   0.782275208105718 0.333520407166337];
+parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.268634081422561   0.883034591106096   5.953417691287351  37.277275082280944   0.782275208105718 0.333520407166337];
 
 parVecNew = parVec;
 
@@ -38,13 +39,13 @@ for run = 1:Nruns
         fluid(run).cnst.mu_s = 0.3592;
         fluid(run).cnst.G_0 = 2.3896;
         fluid(run).cnst.sigma_y0 = 0.7951;
-
-        fluid(run).par.W = 14.1442;
-        fluid(run).par.alfa = 0.4096;
-        fluid(run).par.b_0 = 0.0015;
-        fluid(run).par.d_f = 2.3325;
-        fluid(run).par.porosity = 0.8192;
-        fluid(run).par.m_p = 978;
+% 
+%         fluid(run).par.W = 14.1442;
+%         fluid(run).par.alfa = 0.4096;
+%         fluid(run).par.b_0 = 0.0015;
+%         fluid(run).par.d_f = 2.3325;
+%         fluid(run).par.porosity = 0.8192;
+%         fluid(run).par.m_p = 978;
 
         obj = fluid(run);
         % Objective function
@@ -52,7 +53,7 @@ for run = 1:Nruns
 
         ERROR_TOT = func(parVecNew);
 
-        if ERROR_TOT<ERBEST
+        if ERROR_TOT<=ERBEST
             parVecBest = parVecNew;
             parVec = parVecNew;
             ERBEST = ERROR_TOT;

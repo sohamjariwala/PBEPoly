@@ -9,29 +9,12 @@ function fObj = objectiveFunctionSilica(obj, parVec)
     obj.par.b_0 = exp(parVec(3));
     obj.par.porosity = parVec(4);
 
-    %% Loading the steady state experimental data set into variables
-    silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
-    shear_rate_SS = silica_SS(:,1);
-    shear_stress_SS = silica_SS(:,2);
 
-    stress = zeros(size(shear_rate_SS));
-    %% Solving the steady shear equations and collecting the output
-    for i = length(shear_rate_SS):-1:1
-        if i == length(shear_rate_SS)
-            out = obj.steadyShear(shear_rate_SS(i));
-            stress(i) = out.stress;
-            logintMu(i,:) = out.logintMu;
-        else
-            out = obj.steadyShear(shear_rate_SS(i), out.logintMu);
-            stress(i) = out.stress;
-            logintMu(i,:) = out.logintMu;
-        end
-    end
+%% Steady state experimental data    
+silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
+shear_rate = silica_SS(:,1);
+shear_stress_SS = silica_SS(:,2);
     
-    SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
-        /length(shear_stress_SS);
-
-
 %% Transient experimental data
 silica_stepDown = readmatrix('silica.ExpData/silica_Stepdown_i5.txt');
 silica_stepDownTime = silica_stepDown(:,1);
@@ -74,32 +57,55 @@ silica_stepUpi0p1f1 = EXP.silica_stepUpi0p1f1;
 silica_stepUpi0p1f0p5 = EXP.silica_stepUpi0p1f0p5;
 silica_stepUpi0p1f0p25 = EXP.silica_stepUpi0p1f0p25;
 
-% Clear temporary variables
+%% Clear temporary variables
 clear opts
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Solving the steady shear equations and collecting the output variables
+stress = zeros(size(shear_rate));
+logintMu = (zeros(length(shear_rate), 5));
 
-%% Solution
+for i = length(shear_rate):-1:1
+    if i == length(shear_rate)
+        out = obj.steadyShear(shear_rate(i));
+        EXITFLAG(i) = out.EXITFLAG;
+        stress(i) = out.stress;
+        logintMu(i,:) = out.logintMu;
+    else
+        out = obj.steadyShear(shear_rate(i), out.logintMu);
+        EXITFLAG(i) = out.EXITFLAG;
+        stress(i) = out.stress;
+        logintMu(i,:) = out.logintMu;
+    end
+end
+
+%% Solving transient step shear equations
+initial.EXITFLAG = 1;
+initial.logintMu = interp1(shear_rate, logintMu, 5);
+initial.gamma_e = obj.gamma_e_max(initial.logintMu);
+initial.stress = interp1(shear_rate, stress,5);
 % Step down
-    initial.EXITFLAG = 1;
-    initial.logintMu = interp1(shear_rate_SS, logintMu, 5);
-    initial.gamma_e = obj.gamma_lin;
-    
-    SD1 = stepShear(obj, iSD1, fSD1, time, initial);
-    SD2 = stepShear(obj, iSD2, fSD2, time, initial);
-    SD3 = stepShear(obj, iSD3, fSD3, time, initial);
-    SD4 = stepShear(obj, iSD4, fSD4, time, initial);
+SD1 = stepShear(obj, iSD1, fSD1, time, initial);
+SD2 = stepShear(obj, iSD2, fSD2, time, initial);
+SD3 = stepShear(obj, iSD3, fSD3, time, initial);
+SD4 = stepShear(obj, iSD4, fSD4, time, initial);
 
 % Step up
-    initial.EXITFLAG = 1;
-    initial.logintMu = interp1(shear_rate_SS, logintMu, 0.1);
-    initial.gamma_e = obj.gamma_lin;
-    
-    SU1 = stepShear(obj, iSU1, fSU1, time, initial); 
-    SU2 = stepShear(obj, iSU2, fSU2, time, initial);
-    SU3 = stepShear(obj, iSU3, fSU3, time, initial);
-    SU4 = stepShear(obj, iSU4, fSU4, time, initial);
-    SU5 = stepShear(obj, iSU5, fSU5, time, initial);
+initial.EXITFLAG = 1;
+initial.logintMu = interp1(shear_rate, logintMu, 0.1);
+initial.gamma_e = obj.gamma_e_max(initial.logintMu);
+initial.stress = interp1(shear_rate, stress,0.1);
 
-%% Error
+% Step down
+SU1 = stepShear(obj, iSU1, fSU1, time, initial);
+SU2 = stepShear(obj, iSU2, fSU2, time, initial);
+SU3 = stepShear(obj, iSU3, fSU3, time, initial);
+SU4 = stepShear(obj, iSU4, fSU4, time, initial);
+SU5 = stepShear(obj, iSU5, fSU5, time, initial);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
+        /length(shear_stress_SS);
+    
 transient_error_SD = ((norm((SD1.stress-silica_stepDowni5f2p5))./mean(silica_stepDowni5f2p5)) + ...
     (norm((SD2.stress-silica_stepDowni5f1p0))./mean(silica_stepDowni5f1p0)) + ...
     (norm((SD3.stress-silica_stepDowni5f0p5))./mean(silica_stepDowni5f0p5)) + ...
@@ -112,6 +118,7 @@ transient_error_SU = ((norm((SU1.stress-silica_stepUpi0p1f5))./mean(silica_stepU
     (norm((SU4.stress-silica_stepUpi0p1f0p5))./mean(silica_stepUpi0p1f0p5)) +...
     (norm((SU5.stress-silica_stepUpi0p1f0p25))./mean(silica_stepUpi0p1f0p25))) ...
     ./length(silica_stepUpTime)/5;
+
 
 fObj = SS_error + transient_error_SD + transient_error_SU;
 

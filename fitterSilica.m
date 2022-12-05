@@ -1,15 +1,26 @@
 %% Starting point
 load('silicaTest4.mat')
-    parVec(1) = log(1+silica.par.W);
-    parVec(2) = silica.par.alfa;
-    parVec(3) = log(silica.par.b_0*0.5);
-    parVec(4) = silica.par.porosity;
+%     parVec(1) = log(1+silica.par.W);
+%     parVec(2) = silica.par.alfa;
+%     parVec(3) = log(silica.par.b_0*0.5);
+%     parVec(4) = silica.par.porosity;
 
+% parVec = [3.64230556388067,0.620057132113812,-7.89776680411588,0.859826375826576];
+% parVec = [1.1662 1.51458 -5.3424 0.89566];
+% parVec = [0.072035895235900   1.179883317834147  -6.885865258517703   0.848891407123182];
+A = 1.73;
+parVec = [A, 0.909];
 
-lb = min([0.85*parVec; 1.15*parVec]);
-ub = max([0.85*parVec; 1.15*parVec]);
+% parVecMax = [Inf, 1, Inf, 1];
+% parVecMin = [1e-6, 0.01, -Inf, 0.2];
 
-ITER=1000;   ERBEST=100; Nruns = 15;
+% ub = [1, 0.99];
+% lb = [10, 0.80];
+
+lb = min([0.75*parVec; 1.25*parVec]);
+ub = max([0.75*parVec; 1*parVec]);
+
+ITER=100;   ERBEST=100; Nruns = 15;
 for run = 1:Nruns
     for ijk = 1:ITER
     
@@ -29,9 +40,9 @@ for run = 1:Nruns
         else
             MULT=.025;
         end
-%         fprintf("Current parameter values = \n")
+        fprintf("Current parameter values = \n")
         parVecNew = sign(parVec).*(sqrt(abs(parVec) + MULT*(0.5-rand(size(parVec))).*((ub-lb)))).^2;
-%         disp(parVecNew);
+        disp(parVecNew);
 
         % Initializing the fluid object and functions with default parameter
         fluid(run) = PBEPoly;
@@ -65,11 +76,15 @@ for run = 1:Nruns
     end
     x = parVecBest;
     % Assigning values to the parameters
-    fluid(run).par.W = exp(x(1))-1;
-    fluid(run).par.alfa = x(2);
-    fluid(run).par.b_0 = exp(x(3));
-    fluid(run).par.porosity = x(4);
+%     fluid(run).par.W = exp(x(1))-1;
+%     fluid(run).par.alfa = x(2);
+%     fluid(run).par.b_0 = exp(x(3));
+%     fluid(run).par.porosity = x(4);
 
+    fluid(run).par.W = 0.0185*2.54^x(1);
+    fluid(run).par.alfa = 2.5400/(2.54)^x(1);
+    fluid(run).par.b_0 = 0.0082/2.54^x(1);
+    fluid(run).par.porosity = x(2);
     
     N = run;
     W = fluid(run).par.W;

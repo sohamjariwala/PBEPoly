@@ -4,9 +4,18 @@ function out = steadyShear(obj, shear_rate, initialConditions)
     % Solving for steady state using MATLAB fsolve
     fun = @(x) momicDerivative5(obj, 0, x, shear_rate);
     options = optimoptions('fsolve','TolFun', eps, 'Display','off', 'FunctionTolerance', eps);
-    
     if nargin > 2
-        [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, initialConditions, options);
+        init.logintMu= initialConditions.logintMu;
+        init.stress =  initialConditions.stress;
+        init.gamma_e = initialConditions.gamma_e;
+    else
+        init.logintMu=obj.InitialCondition;
+        init.gamma_e = obj.gamma_lin;
+        init.stress = 10;
+    end
+
+    if nargin > 2
+        [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, initialConditions.logintMu, options);
     else
         [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, obj.InitialCondition, options);
     end

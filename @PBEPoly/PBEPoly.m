@@ -72,11 +72,11 @@ classdef PBEPoly
         end
                 
         function x = cutOff(obj, logintMu)
-        % Hyperbolic cutoff function to model dynamic arrest
+        % Cutoff function to model dynamic arrest
             phi_a = obj.phi_a(logintMu);
 
-       x = ((obj.phi_max(logintMu) - phi_a)...
-         ./ (obj.phi_max(logintMu) - obj.phi_pc))^(2/(3-obj.par.d_f));
+            x = ((obj.phi_max(logintMu) - phi_a)...
+                ./ (obj.phi_max(logintMu) - obj.phi_pc))^(2/(3-obj.par.d_f));
         
         end
         
@@ -104,7 +104,7 @@ classdef PBEPoly
         % Elastic modulus based on Shih et al. strong link regime
         d_b = 1; % backbone fractal dimension
         x = obj.cnst.G_0.*((obj.phi_a(logintMu) - obj.phi_pc)...
-         ./(obj.phi_max(logintMu) - obj.phi_pc)).^((2)/(3-obj.par.d_f));
+         ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
         end
         
         function x = elastic_stress(obj, logintMu, gamma_e)
@@ -138,10 +138,10 @@ classdef PBEPoly
               + obj.viscous_stress(logintMu, shearRate);
         end
         
-        function x = tau(obj, logintMu, gamma_e)
+        function x = tau(obj, logintMu,shearRate,gamma_e)
         % Relaxation time      
             x = abs(obj.gamma_lin...
-                ./obj.structure_shear_rate(logintMu)...
+                ./obj.structure_shear_rate(shearRate,logintMu)...
                 *abs(obj.gamma_lin/gamma_e));
         end
     end 

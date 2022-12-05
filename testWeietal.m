@@ -9,7 +9,10 @@
 % parVec = [3.052969e+00, 5.902315e-01, -6.315614e+00, 2.265117e+00, 8.821384e-01, 5.878319e+00, 3.806119e+01, 7.888523e-01, 3.362045e-01];
 % parVec = [3.018240e+00, 5.848876e-01, -6.412818e+00, 2.272982e+00, 8.816055e-01, 5.944847e+00, 3.712128e+01, 7.804288e-01, 3.360543e-01];
 % parVec = [3.032708665273683   0.586249427294304  -6.387371315598383   2.273004409469752   0.882737572027301   5.969332515797490 37.111622267827748   0.782155476209003   0.334940333820390];
-parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.268634081422561   0.883034591106096   5.953417691287351  37.277275082280944   0.782275208105718 0.333520407166337];
+% parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.268634081422561   0.883034591106096   5.953417691287351  37.277275082280944   0.782275208105718 0.333520407166337];
+%-------------------------------------------------------------------------------
+parVec =   [3.0139    0.5881   -6.3431    2.2675    0.8844    5.9643   37.1692    0.7826    0.3327];
+
 obj = PBEPoly;
 % Changing constants and parameters to ones obtained from monodisperse 
 % solution changed parameters
@@ -84,11 +87,11 @@ logintMu = (zeros(length(SSEXP.shear_rate), 5));
 %% Solving the steady shear equations and collecting the output
 for i = length(SSEXP.shear_rate):-1:1
     if i == length(SSEXP.shear_rate)
-        out = obj.steadyShear(SSEXP.shear_rate(i));
+        out = obj.steadyShearODE(SSEXP.shear_rate(i));
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     else
-        out = obj.steadyShear(SSEXP.shear_rate(i), out.logintMu);
+        out = obj.steadyShearODE(SSEXP.shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     end
@@ -99,7 +102,8 @@ SS_error = norm((stress-SSEXP.stress)./mean(SSEXP.stress))...
 
 fprintf("Steady state error = %f\n", SS_error);
 
-%% Steady shear plot 
+%% Steady shear plot
+figure
 loglog(SSEXP.shear_rate, stress, SSEXP.shear_rate, SSEXP.stress,'o',...
     'MarkerSize',6,'LineWidth',2)
 xlabel('Shear rate (s^{-1})','FontSize',18);
@@ -114,6 +118,7 @@ distribution
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(SSEXP.shear_rate, logintMu, 0.1);
 initial.gamma_e = obj.gamma_lin;
+initial.stress = interp1(SSEXP.shear_rate, stress, 0.1);
 
     %% Set Step Shear parameters
     i1 = 0.1; f1 = 1;
@@ -128,7 +133,7 @@ initial.gamma_e = obj.gamma_lin;
     transient_error = (norm((i1f1.stress-StepDownEXP.i0p1f1_stress)./(StepDownEXP.i0p1f1_stress)) + ...
                        norm((i2f2.stress-StepDownEXP.i0p1f2p5_stress)./(StepDownEXP.i0p1f2p5_stress)) + ...
                        norm((i3f3.stress-StepDownEXP.i0p1f5_stress)./(StepDownEXP.i0p1f5_stress)))...
-                     ./length(StepDownEXP.i0p1f5_stress);
+                     ./length(StepDownEXP.i0p1f5_stress)/3;
 
     fprintf("Transient step shear error = %f\n", transient_error);
 

@@ -7,9 +7,8 @@ Nfits = 15;
 numParameters = 4;
 
 % Initial guess
-parVec = [3.87353160070640,0.596908019508970,-7.02633096705751,0.917568804031334];
-parVec = [3.325657e+00, 6.261130e-01, -6.704657e+00, 9.336180e-01];
-parVec = [4.1263 0.7213 -6.9142 0.8999];
+parVec =[0.016293920207754  0.6 -6.863277109520129   0.857693893803876];
+
 lb = min([0.75*parVec; 1.25*parVec]);
 ub = max([0.75*parVec; 1.25*parVec]);
 
@@ -44,15 +43,14 @@ obj = fluid(i);
 % Objective function
 func = @(x) objectiveFunctionSilica(obj, x);
 
-
 % Genetic algorithm
-%     options = optimoptions('ga','UseParallel',true, 'Display', 'iter');
-%     [x,fval,exitflag] = ga(func,numParameters,[],[],[],[],lb,ub,[],options);
+    options = optimoptions('ga','UseParallel',true, 'Display', 'iter');
+    [x,fval,exitflag] = ga(func,numParameters,[],[],[],[],lb,ub,[],options);
 
-% Parallel tempering
-   x = ParTemp(func,parVec,1e-2,lb,'MIN',ub,'MAX');
+% % Parallel tempering
+%    x = ParTemp(func,parVec,1e-2,lb,'MIN',ub,'MAX');
 
-% % % Simulated annealing
+% % Simulated annealing
 % options = optimoptions('simulannealbnd', 'PlotFcns',...
 %           {@saplotbestx,@saplotbestf,@saplotx,@saplotf},...
 %           'OutputFcn', @myoutSA);
@@ -64,7 +62,6 @@ func = @(x) objectiveFunctionSilica(obj, x);
     fluid(i).par.b_0 = exp(x(3));
     fluid(i).par.porosity = x(4);
 
-    
     N = i;
     W = fluid(i).par.W;
     alfa =  fluid(i).par.alfa;
