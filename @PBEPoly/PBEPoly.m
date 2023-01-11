@@ -11,7 +11,8 @@ classdef PBEPoly
             'b_0' , [], ...             % Breakage constant
             'd_f' , [], ...             % Fractal dimension
             'porosity', [], ...         % R_h/R_a
-            'm_p', []...                % #(particles) in a primary cluster
+            'm_p', [],...               % #(particles) in a primary cluster
+            'kh',[]...                  % Backstress modulus parameter
             );
   
        % Constants that will remain fix throughout the computation.
@@ -19,7 +20,6 @@ classdef PBEPoly
             'phi_p'    , [], ...        % Particle volume fraction
             'a_p'      , [], ...        % Primary particle radius
             'mu_s'     , [], ...        % Suspension viscosity (Pa-s)
-            'G_0'      , [], ...        % Equilibrium modulus (Pa)
             'sigma_y0' , [], ...        % Yield stress (Pa)
             'phi_max'  , 0.64, ...      % Maximum packing fraction
             'k_b' , 1.38064852e-23, ... % Boltzmann constant
@@ -33,30 +33,30 @@ classdef PBEPoly
 %% Functions describing rheological variables
     methods
         function obj = PBEPoly()
-          obj.par.W = 0.008998930690468;
-          obj.par.alfa = 0.665487794544652;
-          obj.par.b_0 = 0.003742494709682;
-          obj.par.d_f = 2.11;
-          obj.par.porosity = 0.92;
-          obj.par.m_p = 468;
-          
-          obj.cnst.phi_p = 0.03;
-          obj.cnst.a_p = 8e-9;
-          obj.cnst.mu_s = 0.41;
-          obj.cnst.G_0 = 450;
-          obj.cnst.sigma_y0 = 11;
-          obj.cnst.phi_max = 0.64;
-          obj.cnst.k_b = 1.3806e-23;
-          obj.cnst.T = 298.15;
-          obj = inverseOfA(obj);
+            % Initialize fitting parameters
+            obj.par.W = 0.008998930690468;
+            obj.par.alfa = 0.665487794544652;
+            obj.par.b_0 = 0.003742494709682;
+            obj.par.d_f = 2.11;
+            obj.par.porosity = 0.92;
+            obj.par.m_p = 468;
+            obj.par.kh = 0.7;
+
+            % Initialize constants 
+            obj.cnst.phi_p = 0.03;
+            obj.cnst.a_p = 8e-9;
+            obj.cnst.mu_s = 0.41;
+            obj.cnst.sigma_y0 = 11;
+            obj.cnst.G_0 = 450;
+            obj.cnst.phi_max = 0.64;
+            obj.cnst.q = 1;
+            obj.cnst.k_b = 1.3806e-23;
+            obj.cnst.T = 298.15;
+            obj = inverseOfA(obj);
+            obj.phi_pc =  obj.calculate_phi_pc();
         end
-                
-        function x = get.gamma_lin(obj)
-        % Limit of linearity of elastic strain
-            x = obj.cnst.sigma_y0/obj.cnst.G_0;
-        end
-        
-        function x = get.phi_pc(obj)
+
+        function x = calculate_phi_pc(obj)
         % Minimum allowable volume fraction of aggregates
             x = obj.cnst.phi_p*obj.par.m_p^(3/obj.par.d_f-1);
         end
@@ -76,25 +76,25 @@ classdef PBEPoly
         % Cutoff function to model dynamic arrest
             phi_a = obj.phi_a(logintMu);
 
-            x = ((obj.phi_max(logintMu) - phi_a)...
+            x = abs((obj.phi_max(logintMu) - phi_a)...
                 ./ (obj.phi_max(logintMu) - obj.phi_pc))^(2/(3-obj.par.d_f));
         end
         
         function x = phi_max(~, logintMu)
         % Maximum packing fraction as a function of moments (polydisperse)
             Mu = exp(logintMu); Mu = [Mu(1) 1 Mu(2:end)];
-            sigma = sqrt(log( ...
+            var_sigma = sqrt(abs(reallog( ...
                 Mu(4)*Mu(2)/Mu(3)^2 ...
-                ));
+                )));
    
-            x =  1-0.57*exp(-sigma) + 0.2135*exp(-0.57*sigma/0.2135) ...
-            + 0.0019*(cos(2*pi*(1-exp(-0.75*sigma.^0.7 - 0.0025*sigma.^4)))-1);
+            x =  1-0.57*exp(-var_sigma) + 0.2135*exp(-0.57*var_sigma/0.2135) ...
+            + 0.0019*(cos(2*pi*(1-exp(-0.75*var_sigma.^0.7 - 0.0025*var_sigma.^4)))-1);
         end
         
         function x = eta(obj, phi, logintMu)
         % Suspension viscosity based on Krieger-Dougherty equation.
             phi_max = obj.phi_max(logintMu);
-            x = ( 1 - obj.phi_h(phi) / phi_max ).^(-2.5*phi_max);
+            x = abs( 1 - obj.phi_h(phi) / phi_max ).^(-2.5*phi_max);
         end
         
         % Viscosity for a polydisperse suspension.
@@ -103,14 +103,19 @@ classdef PBEPoly
         function x = sigma_y(obj, logintMu)
         % Elastic modulus based on Shih et al. strong link regime
         d_b = 1; % backbone fractal dimension
-        x = obj.cnst.sigma_y0*((obj.phi_a(logintMu) - obj.phi_pc)...
+        x = obj.cnst.sigma_y0*abs((obj.phi_a(logintMu) - obj.phi_pc)...
          ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
         end
         
-        function x = gamma_dot_p(obj, gamma_e, shearRate, logintMu)
+        function x = gamma_dot_p(obj, sigma, A, logintMu)
         % Plastic deformation rate
-            gamma_e_max = obj.gamma_e_max(logintMu);
-            x = shearRate/(2 - sign(shearRate)*gamma_e/gamma_e_max);
+            if abs(obj.sigma_eff(sigma, A)) < obj.sigma_y(logintMu)
+                x = 0;
+
+            elseif  abs(obj.sigma_eff(sigma, A)) >= obj.sigma_y(logintMu)
+                x = (abs(obj.sigma_eff(sigma, A)) - obj.sigma_y(logintMu))...
+                    * sign(obj.sigma_eff(sigma, A))/obj.etaTrimodal(logintMu);
+            end
         end
         
         function x = viscous_stress(obj, logintMu, shearRate)
@@ -124,11 +129,10 @@ classdef PBEPoly
               + obj.viscous_stress(logintMu, shearRate);
         end
         
-        function x = tau(obj, logintMu,shearRate,gamma_e)
+        function x = tau(obj, logintMu,shearRate)
         % Relaxation time      
-            x = abs(obj.gamma_lin...
-                ./obj.structure_shear_rate(shearRate,logintMu)...
-                *abs(obj.gamma_lin/gamma_e));
+            x = abs(obj.cnst.sigma_y0/obj.cnst.G_0...
+                ./obj.structure_shear_rate(shearRate,logintMu));
         end
      
         %% Stress responses
@@ -194,7 +198,7 @@ classdef PBEPoly
             initialMu(k)=gam(k)*(mn^(k-2));
             end 
             initialMu(2)=[];
-            x=log(initialMu);
+            x=reallog(initialMu);
             
             x = [-6.221327387190237 6.411211053369301 13.126103089903342 ...
                 20.195599812988782 27.608183731624543];
@@ -211,28 +215,15 @@ classdef PBEPoly
          % Shear stress DE corresponding to the Saramito viscoelastic model
          dX = shearStressDE(obj, t, sigma, gamma_e, shearRate, logintMu)
 
-         function x = Adot(obj, t, A, lambda_i, sigma_s)
+         function x = Adot(obj, ~, A, logintMu, sigma)
              % ADOT Derivative of kinematic hardening parameter
-             lambda = obj.lambda(lambda_i);
-             x = obj.gamma_p_dot(lambda, sigma_s, A) ...
-                 - obj.q*A*abs(obj.gamma_p_dot(lambda, sigma_s, A));
+             x = obj.gamma_dot_p(sigma,A,logintMu) ...
+                 - obj.cnst.q*A*abs(obj.gamma_dot_p(sigma,A,logintMu));
          end
 
-         function x = sigma_eff(obj, sigma_s, A)
+         function x = sigma_eff(obj, sigma, A)
              % SIGMA_EFF Effective stress after kinematic hardening
-             x = sigma_s - obj.kh*A;
+             x = sigma - obj.par.kh*A;
          end
-
-         function x = gamma_p_dot(obj, lambda, sigma_s, A)
-             % GAMMA_P_DOT Plastic strain rate
-             if abs(obj.sigma_eff(sigma_s, A)) < obj.ky*lambda
-                 x = 0;
-
-             elseif  abs(obj.sigma_eff(sigma_s, A)) >= obj.ky*lambda
-                 x = (abs(obj.sigma_eff(sigma_s, A)) - obj.ky*lambda)...
-                     * sign(obj.sigma_eff(sigma_s, A))/lambda/obj.eta_thi;
-             end
-         end
-
     end
 end

@@ -78,6 +78,7 @@ logintMu = (zeros(length(shear_rate), 5));
 for i = length(shear_rate):-1:1
     if i == length(shear_rate)
         out = obj.steadyShear(shear_rate(i));
+        out.A = 1;
     else
         out = obj.steadyShear(shear_rate(i), out);
     end
@@ -161,9 +162,9 @@ for i=1:length(shear_rate)
 end
 R_gOa_p = Rg/(obj.cnst.a_p*10^9);
 % 
-% SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
-%         /length(shear_stress_SS);
-%     
+SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
+        /length(shear_stress_SS);
+    
 % transient_error_SD = ((norm((SD1.stress-silica_stepDowni5f2p5))./mean(silica_stepDowni5f2p5)) + ...
 %     (norm((SD2.stress-silica_stepDowni5f1p0))./mean(silica_stepDowni5f1p0)) + ...
 %     (norm((SD3.stress-silica_stepDowni5f0p5))./mean(silica_stepDowni5f0p5)) + ...

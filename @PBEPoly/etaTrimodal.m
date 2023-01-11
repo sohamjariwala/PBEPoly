@@ -29,7 +29,7 @@ try
          + fu(beta1*phi_d+phi_D)*(1-beta2) ...
          + fu(phi_d)*(1-beta1);
     
-     eta = exp(fTri);
+     eta = real(exp(fTri));
 catch
     eta = 10^6; 
 end

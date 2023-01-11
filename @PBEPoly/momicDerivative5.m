@@ -115,4 +115,6 @@ c=obj.MOMIC(logintMu);
         (fra_moment(5+1/df,c)-m_p^(1/df)*intMu(5));
     
     f(5)= (shearAggregation5 + brownAggregation5 + breakAge5)/intMu(5);
+
+    f = real(f);
 end
