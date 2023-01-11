@@ -1,4 +1,4 @@
-function x = structure_shear_rate(obj,shearRate,logintMu)
+function x = structure_shear_rate(obj,logintMu)
 phi_a = obj.phi_a(logintMu);
 
 % Shear rate corresponding to steady shear structure 

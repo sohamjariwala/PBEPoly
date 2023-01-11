@@ -10,12 +10,13 @@ function out = steadyShear(obj, shear_rate, initialConditions)
 
     % Solving for steady state using MATLAB fsolve
     fun = @(x) obj.momicDerivative5(0, x, shear_rate);
-    options = optimoptions('fsolve','TolFun', eps, 'Display','off', 'FunctionTolerance', eps);
+    options = optimoptions('fsolve','TolFun', 1e-6, 'Display','off', 'FunctionTolerance', 1e-6);
     [out.logintMu,~,out.EXITFLAG,~,~] = fsolve(fun, init.logintMu, options);
     
     % Output variables
     out.stress = total_stress_SS(obj, out.logintMu, shear_rate);
     out.sigma_y = obj.sigma_y(out.logintMu);
+    out.A = 0;
 
  catch
     warning('FSOLVE returned bad solution')

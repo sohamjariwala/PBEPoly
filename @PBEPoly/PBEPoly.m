@@ -27,7 +27,6 @@ classdef PBEPoly
         );
         lnvA;
         phi_pc;
-        gamma_lin;
     end
     
 %% Functions describing rheological variables
@@ -40,7 +39,7 @@ classdef PBEPoly
             obj.par.d_f = 2.11;
             obj.par.porosity = 0.92;
             obj.par.m_p = 468;
-            obj.par.kh = 0.7;
+            obj.par.kh = 0;
 
             % Initialize constants 
             obj.cnst.phi_p = 0.03;
@@ -129,10 +128,10 @@ classdef PBEPoly
               + obj.viscous_stress(logintMu, shearRate);
         end
         
-        function x = tau(obj, logintMu,shearRate)
+        function x = tau(obj, logintMu)
         % Relaxation time      
             x = abs(obj.cnst.sigma_y0/obj.cnst.G_0...
-                ./obj.structure_shear_rate(shearRate,logintMu));
+                ./obj.structure_shear_rate(logintMu));
         end
      
         %% Stress responses
@@ -202,7 +201,6 @@ classdef PBEPoly
             
             x = [-6.221327387190237 6.411211053369301 13.126103089903342 ...
                 20.195599812988782 27.608183731624543];
-            
          end
 
          % Microstructure evolution through population balances   

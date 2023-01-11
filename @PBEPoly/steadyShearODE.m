@@ -2,12 +2,12 @@ function out = steadyShearODE(obj, shear_rate, initialConditions)
 % Steady shear stress calculation
 
 if nargin > 2
-    init.logintMu=initialConditions.logintMu;
+    init.logintMu = initialConditions.logintMu;
     init.stress = initialConditions.stress;
     init.A = initialConditions.A;
 else
     init.logintMu=obj.InitialCondition;
-    init.stress = 100;
+    init.stress = 300;
     init.A = 1;
 end
 
@@ -17,15 +17,15 @@ numMoments = 5;
 %% Solving the system of ODEs
     % Setting tolerance for ODEs
     tstart = tic;
-    odeopts = odeset('RelTol',1e-4,'AbsTol', 1e-4, 'Stats','off', 'Events',@(t,X) myEvent(t,X,tstart));
+    odeopts = odeset('RelTol',1e-8,'AbsTol', 1e-8, 'Stats','off', 'Events',@(t,X) myEvent(t,X,tstart));
     % Solving for transient state at specified times
-    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end-1), shear_rate, X(1:numMoments)'));
+    fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)'));
         obj.Adot(t,X(end-1), X(1:numMoments)',X(end));
         obj.shearStressDE(t, X(end), shear_rate, X(1:numMoments)')];
 % try
               
     out.sol = ode15s(fun, ...
-        [0, 1e5], ...
+        [0, 1e3*obj.tau(init.logintMu)], ...
         [init.logintMu, init.A, init.stress],...
         odeopts);
 
@@ -41,11 +41,11 @@ out.sigma_y = obj.sigma_y(out.logintMu(end,:));
 out.A = sol_Eval(end-1,end);
 out.stress = sol_Eval(end,end);
 
-[~, msgid] = lastwarn;
-if strcmp(msgid, 'MATLAB:illConditionedMatrix') || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
-    error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-end
-lastwarn('')
+% [~, msgid] = lastwarn;
+% if strcmp(msgid, 'MATLAB:illConditionedMatrix') || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
+%     error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
+% end
+% lastwarn('')
 out.EXITFLAG = 1;
     
 % catch

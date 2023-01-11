@@ -78,9 +78,10 @@ logintMu = (zeros(length(shear_rate), 5));
 for i = length(shear_rate):-1:1
     if i == length(shear_rate)
         out = obj.steadyShear(shear_rate(i));
-        out.A = 1;
+        out.A = 0;
     else
-        out = obj.steadyShear(shear_rate(i), out);
+        out = obj.steadyShearODE(shear_rate(i),out);
+%         out = obj.steadyShearODE(shear_rate(i), out);
     end
         EXITFLAG(i) = out.EXITFLAG;
         stress(i) = out.stress;
