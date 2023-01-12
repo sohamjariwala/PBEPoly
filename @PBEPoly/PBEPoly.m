@@ -127,7 +127,7 @@ classdef PBEPoly
         
         function x = total_stress_SS(obj, logintMu, shear_rate)
         % Total stress
-           x =  obj.cnst.sigma_y0 ...
+           x =  obj.sigma_y(logintMu) ...
               + obj.viscous_stress(logintMu, shear_rate);
         end
         

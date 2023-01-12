@@ -80,7 +80,6 @@ for i = length(shear_rate):-1:1
         out = obj.steadyShear(shear_rate(i));
         out.A = 1;
     else
-        out = obj.steadyShearODE(shear_rate(i), out);
         out = obj.steadyShear(shear_rate(i), out);
     end
         EXITFLAG(i) = out.EXITFLAG;
