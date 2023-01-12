@@ -3,7 +3,7 @@
 % moments in log scale.
 % INPUT: Log scale moments
 % OUTPUT: distribution function and plot
-logintMu = logintMu;
+
 time = shear_rate;
 c=obj.MOMIC(logintMu);
 
@@ -34,6 +34,6 @@ ylabel('ln(10) x^{1+1/d_f} f(x)');
 title('Probability density vs. size')
 axis([-inf, inf, 0, inf])
 axis square
-caxis([shear_rate(1) shear_rate(end)])
+clim([shear_rate(1) shear_rate(end)])
 set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
 colorbar, grid on

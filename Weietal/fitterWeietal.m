@@ -5,11 +5,15 @@ parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.26863408
 
 parVecNew = parVec;
 
-lb = min([0.975*parVec; 1.025*parVec]);
-ub = max([0.975*parVec; 1.025*parVec]);
+lb = min([0.95*parVec; 1.05*parVec]);
+ub = max([0.95*parVec; 1.05*parVec]);
 
-ITER=100;   ERBEST=100; Nruns = 15;
-for run = 1:Nruns
+ITER=100; Nruns = 15;
+parfor run = 1:Nruns
+    ERBEST=100;
+parVec = [3.013704391154364   0.590198260682092  -6.354991898429272   2.268634081422561   0.883034591106096   5.953417691287351  37.277275082280944   0.782275208105718 0.333520407166337];
+    parVecBest = parVec;
+
     for ijk = 1:ITER
     
         fprintf("Iteration number #%d\n",ijk );
@@ -31,23 +35,23 @@ for run = 1:Nruns
         disp(parVecNew);
 
         % Initializing the fluid object and functions with default parameter
-        fluid(run) = PBEPoly;
+        fluid = PBEPoly;
         % Changing constants and parameters to ones obtained from monodisperse 
         % solution changed parameters
-        fluid(run).cnst.phi_p = 0.0300;
-        fluid(run).cnst.a_p = 8e-9;
-        fluid(run).cnst.mu_s = 0.3592;
-        fluid(run).cnst.G_0 = 2.3896;
-        fluid(run).cnst.sigma_y0 = 0.7951;
-% 
-%         fluid(run).par.W = 14.1442;
-%         fluid(run).par.alfa = 0.4096;
-%         fluid(run).par.b_0 = 0.0015;
-%         fluid(run).par.d_f = 2.3325;
-%         fluid(run).par.porosity = 0.8192;
-%         fluid(run).par.m_p = 978;
+        fluid.cnst.phi_p = 0.0300;
+        fluid.cnst.a_p = 8e-9;
+        fluid.cnst.mu_s = 0.3592;
+        fluid.cnst.G_0 = 2.3896;
+        fluid.cnst.sigma_y0 = 0.7951;
 
-        obj = fluid(run);
+        fluid.par.W = 14.1442;
+        fluid.par.alfa = 0.4096;
+        fluid.par.b_0 = 0.0015;
+        fluid.par.d_f = 2.3325;
+        fluid.par.porosity = 0.8192;
+        fluid.par.m_p = 978;
+
+        obj = fluid;
         % Objective function
         func = @(x) objectiveFunctionWei(obj, x);
 
@@ -62,26 +66,26 @@ for run = 1:Nruns
     end
     x = parVecBest;
     % Assigning values to the parameters
-    fluid(run).par.W = exp(x(1))-1;
-    fluid(run).par.alfa = x(2);
-    fluid(run).par.b_0 = exp(x(3));
-    fluid(run).par.d_f = x(4);
-    fluid(run).par.porosity = x(5);
-    fluid(run).par.m_p = exp(x(6));
-    fluid(run).cnst.G_0 = x(7);
-    fluid(run).cnst.sigma_y0 = x(8);
-    fluid(run).cnst.mu_s = x(9);
+    fluid.par.W = exp(x(1))-1;
+    fluid.par.alfa = x(2);
+    fluid.par.b_0 = exp(x(3));
+    fluid.par.d_f = x(4);
+    fluid.par.porosity = x(5);
+    fluid.par.m_p = exp(x(6));
+    fluid.cnst.G_0 = x(7);
+    fluid.cnst.sigma_y0 = x(8);
+    fluid.cnst.mu_s = x(9);
     
     N = run;
-    W = fluid(run).par.W;
-    alfa =  fluid(run).par.alfa;
-    b_0 =  fluid(run).par.b_0;
-    d_f =  fluid(run).par.d_f;
-    porosity =  fluid(run).par.porosity;
-    m_p =  fluid(run).par.m_p;
-    G_0 = fluid(run).cnst.G_0;
-    sigma_y0 = fluid(run).cnst.sigma_y0;
-    mu_s = fluid(run).cnst.mu_s;
+    W = fluid.par.W;
+    alfa =  fluid.par.alfa;
+    b_0 =  fluid.par.b_0;
+    d_f =  fluid.par.d_f;
+    porosity =  fluid.par.porosity;
+    m_p =  fluid.par.m_p;
+    G_0 = fluid.cnst.G_0;
+    sigma_y0 = fluid.cnst.sigma_y0;
+    mu_s = fluid.cnst.mu_s;
     error = ERBEST;
     
     if run ==1

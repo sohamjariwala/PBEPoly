@@ -26,7 +26,7 @@ fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end),
     obj.Adot(t,X(end-1), X(1:numMoments)',X(end),shear_rate(t));
     obj.shearStressDE(t, X(end), shear_rate(t), X(1:numMoments)')];
 
-% try
+try
     %% Running the solution
     out.sol = ode15s(fun, ...
         [0, time(end)], ...
@@ -56,17 +56,15 @@ fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end),
     end
     out.EXITFLAG = 1;
 
-% catch
-%     out.time = time;
-%     out.logintMu = 10^6*init.logintMu*ones(1,length(time));
-%     out.A = 10^6*ones(1,length(time));
-%     out.stress = 10^6*ones(1,length(time));
-%     for i = 1:length(time)
-%         out.phi_a(i) = 10^6*ones(1,length(time));
-%         out.sigma_y(i) = 10^6*ones(1,length(time));
-%     end
-%     out.EXITFLAG = -10;
-%     return
-% end
+catch
+    out.time = time;
+    out.logintMu = 10^6*ones(length(time),1)*init.logintMu;
+    out.A = 10^6*ones(1,length(time));
+    out.stress = 10^6*ones(1,length(time));
+    out.phi_a = 10^6*ones(1,length(time));
+    out.sigma_y = 10^6*ones(1,length(time));
+    out.EXITFLAG = -10;
+    return
+end
 end
 

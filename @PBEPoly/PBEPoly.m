@@ -218,5 +218,39 @@ classdef PBEPoly
              % SIGMA_EFF Effective stress after kinematic hardening
              x = sigma - obj.par.kh*A;
          end
+
+         % Plot functions
+         function flowcurve(obj,shear_rate)
+             % FLOWCURVE Plot steady state flow curve
+             if nargin < 2
+                 shear_rate = logspace(-2,2,20);
+             end
+
+             for i = length(shear_rate):-1:1
+                 if i == length(shear_rate)
+                     out = obj.steadyShear(shear_rate(i));
+                     stress(i) = out.stress;
+                     logintMu(i,:) = out.logintMu;
+                     elastic_stress(i) = out.sigma_y;
+                 else
+                     out = obj.steadyShear(shear_rate(i), out);
+                     stress(i) = out.stress;
+                     logintMu(i,:) = out.logintMu;
+                     elastic_stress(i) = out.sigma_y;
+                 end
+             end
+
+             figure('Name','Steady state flow curve','NumberTitle','off')
+             loglog(shear_rate, stress, ...
+                 shear_rate, elastic_stress, ...
+                 shear_rate, stress-elastic_stress, ...
+                 'LineWidth', 2);
+             xlabel('$\dot\gamma \ [\mathrm{s}^{-1}]$','Interpreter','latex');
+             ylabel('$\sigma_{yx} \ [\mathrm{Pa}]$','Interpreter','latex');
+             legend('Shear stress','Elastic stress','Viscous stress', ...
+                 'Location','best')
+             set(gca,'FontSize',20,'LineWidth',2)
+             axis([-inf inf 0.1 inf])
+         end
     end
 end

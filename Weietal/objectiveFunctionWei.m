@@ -1,6 +1,4 @@
-%-------------------------------------------------------------------------------
-parVec =   [3.0139    0.5881   -6.3431    2.2675    0.8844    5.9643   37.1692    0.7826    0.3327];
-obj = PBEPoly;
+function fObj = objectiveFunctionWei(obj, parVec)
 %% Steady state
     %% Loading the parameters 
     obj.par.W = exp(parVec(1))-1;
@@ -52,7 +50,6 @@ SSEXP = readtable("./experimental_data.xlsx", opts,...
 
 clear opts
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-shear_rate = SSEXP.shear_rate;
 stress = zeros(size(SSEXP.shear_rate));
 logintMu = (zeros(length(SSEXP.shear_rate), 5));
 
@@ -63,7 +60,7 @@ for i = length(SSEXP.shear_rate):-1:1
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     else
-        out = obj.steadyShearODE(SSEXP.shear_rate(i), out);
+        out = obj.steadyShear(SSEXP.shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     end
@@ -72,24 +69,11 @@ end
 SS_error = norm((stress-SSEXP.stress)./mean(SSEXP.stress))...
     /length(SSEXP.stress);
 
-fprintf("Steady state error = %f\n", SS_error);
-
-%% Steady shear plot
-figure
-loglog(SSEXP.shear_rate, stress, SSEXP.shear_rate, SSEXP.stress,'o',...
-    'MarkerSize',6,'LineWidth',2)
-xlabel('Shear rate (s^{-1})','FontSize',18);
-ylabel('Stress (Pa)','FontSize',18); 
-grid on;       
-set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-axis([-inf inf 5e-1 100]);
-
-distribution
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Transient step shear plot
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(SSEXP.shear_rate, logintMu, 0.1);
 initial.stress = interp1(SSEXP.shear_rate, stress, 0.1);
+initial.A = 1;
 
 %% Set Step Shear parameters
 i1 = 0.1; f1 = 1;
@@ -105,27 +89,6 @@ transient_error = (norm((i1f1.stress-StepDownEXP.i0p1f1_stress)./(StepDownEXP.i0
                    norm((i2f2.stress-StepDownEXP.i0p1f2p5_stress)./(StepDownEXP.i0p1f2p5_stress)) + ...
                    norm((i3f3.stress-StepDownEXP.i0p1f5_stress)./(StepDownEXP.i0p1f5_stress)))...
                  ./length(StepDownEXP.i0p1f5_stress)/3;
-
-fprintf("Transient step shear error = %f\n", transient_error);
-
- %% Transient plots
- figure
-    semilogx(StepDownEXP.i0p1f1_t, StepDownEXP.i0p1f1_stress,'ko',...     
-             StepDownEXP.i0p1f2p5_t, StepDownEXP.i0p1f2p5_stress, 'bv', ...
-             StepDownEXP.i0p1f5_t, StepDownEXP.i0p1f5_stress, 'g^',...
-             StepDownEXP.i0p1f5_t, i3f3.stress, 'g',...
-             StepDownEXP.i0p1f1_t, i1f1.stress,'k',...
-             StepDownEXP.i0p1f2p5_t, i2f2.stress, 'b', ...
-            'MarkerSize',6,'LineWidth',2)
-         
-             legend('1 (1/s)','2.5 (1/s)','5 (1/s)');
-    set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-    xlabel('Time (s)');
-    ylabel(' Stress (Pa)');
-
-    axis([-inf inf 0 12])
-    grid on;       
-
 %% Error
 fObj = SS_error + transient_error;
-fprintf("Total error = %f\n", fObj);
+end
