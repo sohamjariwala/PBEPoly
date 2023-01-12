@@ -9,13 +9,13 @@ the time-dependent stress and structural response.
 
 * Population balance equation
 ```math
-\frac{d\mu_k}{dt} = Br(\mu_k) + SA(\mu_k,\dot\gamma) + SB(mu_k,\dot\gamma) 
+\frac{d\mu_k}{dt} = Br(\mu_k) + SA(\mu_k,\dot\gamma) + SB(\mu_k,\dot\gamma) 
 ```
 
 * Viscoelastic stress equation
 ```math
 \frac{d\sigma}{dt} = \frac{1}{\tau(\phi_a)}\left(-\sigma_{eff} +
-\sigma_y(\phi_a)\mathrm{sgn}(sigma) + \mu_s\eta(\phi_a)\dot\gamma\right)
+\sigma_y(\phi_a)\mathrm{sgn}(\sigma) + \mu_s\eta(\phi_a)\dot\gamma\right)
 ```
 * Back stress equation
 ```math
