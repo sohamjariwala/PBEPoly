@@ -106,26 +106,29 @@ classdef PBEPoly
          ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
         end
         
-        function x = gamma_dot_p(obj, sigma, A, logintMu)
+        function x = gamma_dot_p(obj, sigma, A, logintMu,shear_rate)
         % Plastic deformation rate
-            if abs(obj.sigma_eff(sigma, A)) < obj.sigma_y(logintMu)
-                x = 0;
+        x = abs(sigma/(obj.sigma_y(logintMu)/abs(shear_rate)+obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
+%             if abs(obj.sigma_eff(sigma, A)) < obj.sigma_y(logintMu)
+%                 x = 0;
+% 
+%             elseif  abs(obj.sigma_eff(sigma, A)) >= obj.sigma_y(logintMu)
+%                 x = (abs(obj.sigma_eff(sigma, A)) - obj.sigma_y(logintMu))...
+%                     *sign(obj.sigma_eff(sigma, A))/(obj.cnst.mu_s*(obj.etaTrimodal(logintMu)));
+%             end
 
-            elseif  abs(obj.sigma_eff(sigma, A)) >= obj.sigma_y(logintMu)
-                x = (abs(obj.sigma_eff(sigma, A)) - obj.sigma_y(logintMu))...
-                    * sign(obj.sigma_eff(sigma, A))/obj.etaTrimodal(logintMu);
-            end
+
         end
         
-        function x = viscous_stress(obj, logintMu, shearRate)
+        function x = viscous_stress(obj, logintMu, shear_rate)
         % Viscous stress
-            x = obj.cnst.mu_s.*obj.etaTrimodal(logintMu).*shearRate;
+            x = obj.cnst.mu_s.*obj.etaTrimodal(logintMu).*shear_rate;
         end
         
-        function x = total_stress_SS(obj, logintMu, shearRate)
+        function x = total_stress_SS(obj, logintMu, shear_rate)
         % Total stress
-           x =  obj.sigma_y(logintMu) ...
-              + obj.viscous_stress(logintMu, shearRate);
+           x =  obj.cnst.sigma_y0 ...
+              + obj.viscous_stress(logintMu, shear_rate);
         end
         
         function x = tau(obj, logintMu)
@@ -213,10 +216,10 @@ classdef PBEPoly
          % Shear stress DE corresponding to the Saramito viscoelastic model
          dX = shearStressDE(obj, t, sigma, gamma_e, shearRate, logintMu)
 
-         function x = Adot(obj, ~, A, logintMu, sigma)
+         function x = Adot(obj, ~, A, logintMu, sigma,shear_rate)
              % ADOT Derivative of kinematic hardening parameter
-             x = obj.gamma_dot_p(sigma,A,logintMu) ...
-                 - obj.cnst.q*A*abs(obj.gamma_dot_p(sigma,A,logintMu));
+             gamma_dot_p = obj.gamma_dot_p(sigma,A,logintMu,shear_rate);
+             x = gamma_dot_p - obj.cnst.q*A*abs(gamma_dot_p);
          end
 
          function x = sigma_eff(obj, sigma, A)

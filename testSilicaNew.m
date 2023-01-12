@@ -78,15 +78,16 @@ logintMu = (zeros(length(shear_rate), 5));
 for i = length(shear_rate):-1:1
     if i == length(shear_rate)
         out = obj.steadyShear(shear_rate(i));
-        out.A = 0;
+        out.A = 1;
     else
-        out = obj.steadyShearODE(shear_rate(i),out);
-%         out = obj.steadyShearODE(shear_rate(i), out);
+        out = obj.steadyShearODE(shear_rate(i), out);
+        out = obj.steadyShear(shear_rate(i), out);
     end
         EXITFLAG(i) = out.EXITFLAG;
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
         elastic_comp(i) = out.sigma_y;
+        gamma_dot_p(i) = obj.gamma_dot_p(out.stress,1,out.logintMu,shear_rate(i));
 end
 toc;
 
