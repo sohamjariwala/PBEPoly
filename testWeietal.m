@@ -63,7 +63,7 @@ for i = length(SSEXP.shear_rate):-1:1
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     else
-        out = obj.steadyShear(SSEXP.shear_rate(i), out);
+        out = obj.steadyShearODE(SSEXP.shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     end
@@ -89,7 +89,6 @@ distribution
 %% Transient step shear plot
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(SSEXP.shear_rate, logintMu, 0.1);
-initial.gamma_e = obj.gamma_lin;
 initial.stress = interp1(SSEXP.shear_rate, stress, 0.1);
 
 %% Set Step Shear parameters
@@ -130,7 +129,3 @@ fprintf("Transient step shear error = %f\n", transient_error);
 %% Error
 fObj = SS_error + transient_error;
 fprintf("Total error = %f\n", fObj);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Testing the objective function
-fObj = objectiveFunctionWei(obj, parVec)

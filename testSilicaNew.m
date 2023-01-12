@@ -90,69 +90,67 @@ for i = length(shear_rate):-1:1
 end
 toc;
 
-% %% Solving transient step shear equations
-% initial.EXITFLAG = 1;
-% initial.logintMu = interp1(shear_rate, logintMu, 5);
-% initial.gamma_e = obj.gamma_e_max(initial.logintMu);
-% initial.stress = interp1(shear_rate, stress,5);
-% % Step down
-% tic; SD1 = stepShear(obj, iSD1, fSD1, time, initial); toc;
-% tic; SD2 = stepShear(obj, iSD2, fSD2, time, initial); toc;
-% tic; SD3 = stepShear(obj, iSD3, fSD3, time, initial); toc;
-% tic; SD4 = stepShear(obj, iSD4, fSD4, time, initial); toc;
-% 
-% SD1_phi_a = zeros(size(time));
-% SD2_phi_a = SD1_phi_a;
-% SD3_phi_a = SD1_phi_a;
-% SD4_phi_a = SD1_phi_a;
-% 
-% for ii = 1:length(time)
-%     SD1_phi_a(ii) = obj.phi_a(SD1.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%     SD2_phi_a(ii) = obj.phi_a(SD2.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SD3_phi_a(ii) = obj.phi_a(SD3.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SD4_phi_a(ii) = obj.phi_a(SD4.logintMu(ii,:));
-% end
-% % Step up
-% initial.EXITFLAG = 1;
-% initial.logintMu = interp1(shear_rate, logintMu, 0.1);
-% initial.gamma_e = obj.gamma_e_max(initial.logintMu);
-% initial.stress = interp1(shear_rate, stress,0.1);
-% 
-% % Step down
-% tic; SU1 = stepShear(obj, iSU1, fSU1, time, initial); toc;
-% tic; SU2 = stepShear(obj, iSU2, fSU2, time, initial); toc;
-% tic; SU3 = stepShear(obj, iSU3, fSU3, time, initial); toc;
-% tic; SU4 = stepShear(obj, iSU4, fSU4, time, initial); toc;
-% tic; SU5 = stepShear(obj, iSU5, fSU5, time, initial); toc;
-% 
-% SU1_phi_a = zeros(size(time));
-% SU2_phi_a = SU1_phi_a;
-% SU3_phi_a = SU1_phi_a;
-% SU4_phi_a = SU1_phi_a;
-% SU5_phi_a = SU1_phi_a;
-% 
-% for ii = 1:length(time)
-%    SU1_phi_a(ii) = obj.phi_a(SU1.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SU2_phi_a(ii) = obj.phi_a(SU2.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SU3_phi_a(ii) = obj.phi_a(SU3.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SU4_phi_a(ii) = obj.phi_a(SU4.logintMu(ii,:));
-% end
-% for ii = 1:length(time)
-%    SU5_phi_a(ii) = obj.phi_a(SU5.logintMu(ii,:));
-% end
-% 
+%% Solving transient step shear equations
+initial.EXITFLAG = 1;
+initial.logintMu = interp1(shear_rate, logintMu, 5);
+initial.stress = interp1(shear_rate, stress,5);
+% Step down
+tic; SD1 = stepShear(obj, iSD1, fSD1, time, initial); toc;
+tic; SD2 = stepShear(obj, iSD2, fSD2, time, initial); toc;
+tic; SD3 = stepShear(obj, iSD3, fSD3, time, initial); toc;
+tic; SD4 = stepShear(obj, iSD4, fSD4, time, initial); toc;
+
+SD1_phi_a = zeros(size(time));
+SD2_phi_a = SD1_phi_a;
+SD3_phi_a = SD1_phi_a;
+SD4_phi_a = SD1_phi_a;
+
+for ii = 1:length(time)
+    SD1_phi_a(ii) = obj.phi_a(SD1.logintMu(ii,:));
+end
+for ii = 1:length(time)
+    SD2_phi_a(ii) = obj.phi_a(SD2.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SD3_phi_a(ii) = obj.phi_a(SD3.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SD4_phi_a(ii) = obj.phi_a(SD4.logintMu(ii,:));
+end
+% Step up
+initial.EXITFLAG = 1;
+initial.logintMu = interp1(shear_rate, logintMu, 0.1);
+initial.stress = interp1(shear_rate, stress,0.1);
+
+% Step down
+tic; SU1 = stepShear(obj, iSU1, fSU1, time, initial); toc;
+tic; SU2 = stepShear(obj, iSU2, fSU2, time, initial); toc;
+tic; SU3 = stepShear(obj, iSU3, fSU3, time, initial); toc;
+tic; SU4 = stepShear(obj, iSU4, fSU4, time, initial); toc;
+tic; SU5 = stepShear(obj, iSU5, fSU5, time, initial); toc;
+
+SU1_phi_a = zeros(size(time));
+SU2_phi_a = SU1_phi_a;
+SU3_phi_a = SU1_phi_a;
+SU4_phi_a = SU1_phi_a;
+SU5_phi_a = SU1_phi_a;
+
+for ii = 1:length(time)
+   SU1_phi_a(ii) = obj.phi_a(SU1.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SU2_phi_a(ii) = obj.phi_a(SU2.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SU3_phi_a(ii) = obj.phi_a(SU3.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SU4_phi_a(ii) = obj.phi_a(SU4.logintMu(ii,:));
+end
+for ii = 1:length(time)
+   SU5_phi_a(ii) = obj.phi_a(SU5.logintMu(ii,:));
+end
+
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Calculating radius of gyration
 c = obj.MOMIC(logintMu);
@@ -166,26 +164,26 @@ R_gOa_p = Rg/(obj.cnst.a_p*10^9);
 SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
         /length(shear_stress_SS);
     
-% transient_error_SD = ((norm((SD1.stress-silica_stepDowni5f2p5))./mean(silica_stepDowni5f2p5)) + ...
-%     (norm((SD2.stress-silica_stepDowni5f1p0))./mean(silica_stepDowni5f1p0)) + ...
-%     (norm((SD3.stress-silica_stepDowni5f0p5))./mean(silica_stepDowni5f0p5)) + ...
-%     (norm((SD4.stress-silica_stepDowni5f0p1))./mean(silica_stepDowni5f0p1)))  ...
-%     ./length(silica_stepDownTime)/4;
-% 
-% transient_error_SU = ((norm((SU1.stress-silica_stepUpi0p1f5))./mean(silica_stepUpi0p1f5)) + ...
-%     (norm((SU2.stress-silica_stepUpi0p1f2p5))./mean(silica_stepUpi0p1f2p5)) + ...
-%     (norm((SU3.stress-silica_stepUpi0p1f1))./mean(silica_stepUpi0p1f1)) + ...
-%     (norm((SU4.stress-silica_stepUpi0p1f0p5))./mean(silica_stepUpi0p1f0p5)) +...
-%     (norm((SU5.stress-silica_stepUpi0p1f0p25))./mean(silica_stepUpi0p1f0p25))) ...
-%     ./length(silica_stepUpTime)/5;
-% 
-% 
-% fObj = SS_error + transient_error_SD + transient_error_SU;
-%     
-% fprintf("Error in steady state fit = %f\n", SS_error);
-% fprintf("Transient step down error = %f\n", transient_error_SD);
-% fprintf("Transient step up error = %f\n", transient_error_SU);
-% fprintf("Total error = %f\n", fObj);
+transient_error_SD = ((norm((SD1.stress-silica_stepDowni5f2p5))./mean(silica_stepDowni5f2p5)) + ...
+    (norm((SD2.stress-silica_stepDowni5f1p0))./mean(silica_stepDowni5f1p0)) + ...
+    (norm((SD3.stress-silica_stepDowni5f0p5))./mean(silica_stepDowni5f0p5)) + ...
+    (norm((SD4.stress-silica_stepDowni5f0p1))./mean(silica_stepDowni5f0p1)))  ...
+    ./length(silica_stepDownTime)/4;
+
+transient_error_SU = ((norm((SU1.stress-silica_stepUpi0p1f5))./mean(silica_stepUpi0p1f5)) + ...
+    (norm((SU2.stress-silica_stepUpi0p1f2p5))./mean(silica_stepUpi0p1f2p5)) + ...
+    (norm((SU3.stress-silica_stepUpi0p1f1))./mean(silica_stepUpi0p1f1)) + ...
+    (norm((SU4.stress-silica_stepUpi0p1f0p5))./mean(silica_stepUpi0p1f0p5)) +...
+    (norm((SU5.stress-silica_stepUpi0p1f0p25))./mean(silica_stepUpi0p1f0p25))) ...
+    ./length(silica_stepUpTime)/5;
+
+
+fObj = SS_error + transient_error_SD + transient_error_SU;
+    
+fprintf("Error in steady state fit = %f\n", SS_error);
+fprintf("Transient step down error = %f\n", transient_error_SD);
+fprintf("Transient step up error = %f\n", transient_error_SU);
+fprintf("Total error = %f\n", fObj);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Plot for steady state
 figure
@@ -213,91 +211,76 @@ xlabel('Shear rate ($\mathrm{s}^{-1}$)','Interpreter','latex','FontSize',18);
 ylabel('$R_a/a_p$', 'Interpreter','latex','FontSize',18);
 axis([0.01 inf -inf inf])
 
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % Plots for transients
-% figure
-% box on;
-% semilogx(time, SD1.stress,'k-', ...
-%     time, SD2.stress,'r--',...
-%     time, SD3.stress,'m-.',...
-%     time, SD4.stress,'b:',...
-%     silica_stepDownTime, silica_stepDowni5f2p5, 'k^',...
-%     silica_stepDownTime, silica_stepDowni5f1p0, 'ro',...
-%     silica_stepDownTime, silica_stepDowni5f0p5, 'mv',...
-%     silica_stepDownTime, silica_stepDowni5f0p1, 'bs',...
-%     'MarkerSize',6,'LineWidth',2)
-% 
-% set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-% xlabel('Time (s)');
-% ylabel(' Stress (Pa)');
-% legend('2.5 s^{-1}','1 s^{-1}','0.5 s^{-1}','0.1 s^{-1}');
-% axis([-inf inf 0 25])
-% grid on;
-% 
-% figure
-% box on;
-% semilogx(time, SD1.gamma_e,'k', ...
-%     time, SD2.gamma_e,'r',...
-%     time, SD3.gamma_e,'m',...
-%     time, SD4.gamma_e,'b',...
-%     'LineWidth',2);
-% set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-% xlabel('Time (s)');
-% ylabel(' Elastic shear strain (-)');
-% legend('2.5 s^{-1}','1 s^{-1}','0.5 s^{-1}','0.1 s^{-1}');
-% axis([1e-2 1e3 0 inf])
-% grid on;
-% 
-% 
-% figure
-% box on;
-% semilogx(time, SD1_phi_a,'k-', ...
-%         time, SD2_phi_a,'r--',...
-%         time, SD3_phi_a,'m-.',...
-%         time, SD4_phi_a,'b:',...
-%         'MarkerSize',6,'LineWidth',2)
-% 
-%     set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-% xlabel('Time (s)');
-% ylabel('\phi_a');
-% legend('2.5 s^{-1}','1 s^{-1}','0.5 s^{-1}', '0.1 s^{-1}');
-% axis([0.001 tEnd -inf inf])
-% grid on;
-% 
-% -------------------------------------------------------------------------------
-% figure
-% box on;
-% semilogx(time, SU1.stress,'k-', ...
-%     time, SU2.stress,'r--',...
-%     time, SU3.stress,'m-.',...
-%     time, SU4.stress,'b:',...
-%     time, SU5.stress,'g.-',...
-%     silica_stepUpTime, silica_stepUpi0p1f5, 'k^',...
-%     silica_stepUpTime, silica_stepUpi0p1f2p5, 'ro',...
-%     silica_stepUpTime, silica_stepUpi0p1f1, 'mv',...
-%     silica_stepUpTime, silica_stepUpi0p1f0p5, 'bs',...
-%     silica_stepUpTime, silica_stepUpi0p1f0p25, 'gp',...
-%     'MarkerSize',6,'LineWidth',2)
-% 
-% set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-% xlabel('Time (s)');
-% ylabel(' Stress (Pa)');
-% legend('5 s^{-1}','2.5 s^{-1}','0.1 s^{-1}','0.5 s^{-1}','2.5 s^{-1}');
-% axis([-inf inf 0 inf])
-% grid on;
-% 
-% figure
-% box on;
-% semilogx(time, SU1_phi_a,'k-', ...
-%         time, SU2_phi_a,'r--',...
-%         time, SU3_phi_a,'m-.',...
-%         time, SU4_phi_a,'b:',...
-%         time, SU5_phi_a,'g.-',...
-%         'MarkerSize',6,'LineWidth',2)
-% 
-%     set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
-% xlabel('Time (s)');
-% ylabel('\phi_a');
-% legend('5 s^{-1}','2.5 s^{-1}','1.0 s^{-1}','0.5 s^{-1}','0.25 s^{-1}');
-% axis([-inf inf -inf inf])
-% grid on;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Plots for transients
+figure
+box on;
+semilogx(time, SD1.stress,'k-', ...
+    time, SD2.stress,'r--',...
+    time, SD3.stress,'m-.',...
+    time, SD4.stress,'b:',...
+    silica_stepDownTime, silica_stepDowni5f2p5, 'k^',...
+    silica_stepDownTime, silica_stepDowni5f1p0, 'ro',...
+    silica_stepDownTime, silica_stepDowni5f0p5, 'mv',...
+    silica_stepDownTime, silica_stepDowni5f0p1, 'bs',...
+    'MarkerSize',6,'LineWidth',2)
+
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
+xlabel('Time (s)');
+ylabel(' Stress (Pa)');
+legend('2.5 s^{-1}','1 s^{-1}','0.5 s^{-1}','0.1 s^{-1}');
+axis([-inf inf 0 25])
+grid on;
+
+figure
+box on;
+semilogx(time, SD1_phi_a,'k-', ...
+        time, SD2_phi_a,'r--',...
+        time, SD3_phi_a,'m-.',...
+        time, SD4_phi_a,'b:',...
+        'MarkerSize',6,'LineWidth',2)
+
+    set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
+xlabel('Time (s)');
+ylabel('\phi_a');
+legend('2.5 s^{-1}','1 s^{-1}','0.5 s^{-1}', '0.1 s^{-1}');
+axis([0.001 tEnd -inf inf])
+grid on;
+
+%-------------------------------------------------------------------------------
+figure
+box on;
+semilogx(time, SU1.stress,'k-', ...
+    time, SU2.stress,'r--',...
+    time, SU3.stress,'m-.',...
+    time, SU4.stress,'b:',...
+    time, SU5.stress,'g.-',...
+    silica_stepUpTime, silica_stepUpi0p1f5, 'k^',...
+    silica_stepUpTime, silica_stepUpi0p1f2p5, 'ro',...
+    silica_stepUpTime, silica_stepUpi0p1f1, 'mv',...
+    silica_stepUpTime, silica_stepUpi0p1f0p5, 'bs',...
+    silica_stepUpTime, silica_stepUpi0p1f0p25, 'gp',...
+    'MarkerSize',6,'LineWidth',2)
+
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
+xlabel('Time (s)');
+ylabel(' Stress (Pa)');
+legend('5 s^{-1}','2.5 s^{-1}','0.1 s^{-1}','0.5 s^{-1}','2.5 s^{-1}');
+axis([-inf inf 0 inf])
+grid on;
+
+figure
+box on;
+semilogx(time, SU1_phi_a,'k-', ...
+        time, SU2_phi_a,'r--',...
+        time, SU3_phi_a,'m-.',...
+        time, SU4_phi_a,'b:',...
+        time, SU5_phi_a,'g.-',...
+        'MarkerSize',6,'LineWidth',2)
+
+    set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
+xlabel('Time (s)');
+ylabel('\phi_a');
+legend('5 s^{-1}','2.5 s^{-1}','1.0 s^{-1}','0.5 s^{-1}','0.25 s^{-1}');
+axis([-inf inf -inf inf])
+grid on;

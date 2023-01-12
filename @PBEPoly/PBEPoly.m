@@ -106,18 +106,10 @@ classdef PBEPoly
          ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
         end
         
-        function x = gamma_dot_p(obj, sigma, A, logintMu,shear_rate)
+        function x = gamma_dot_p(obj,sigma,A,logintMu,shear_rate)
         % Plastic deformation rate
-        x = abs(sigma/(obj.sigma_y(logintMu)/abs(shear_rate)+obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
-%             if abs(obj.sigma_eff(sigma, A)) < obj.sigma_y(logintMu)
-%                 x = 0;
-% 
-%             elseif  abs(obj.sigma_eff(sigma, A)) >= obj.sigma_y(logintMu)
-%                 x = (abs(obj.sigma_eff(sigma, A)) - obj.sigma_y(logintMu))...
-%                     *sign(obj.sigma_eff(sigma, A))/(obj.cnst.mu_s*(obj.etaTrimodal(logintMu)));
-%             end
-
-
+        x = abs(obj.sigma_eff(sigma,A)/(obj.sigma_y(logintMu)/abs(shear_rate)...
+            +obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
         end
         
         function x = viscous_stress(obj, logintMu, shear_rate)
