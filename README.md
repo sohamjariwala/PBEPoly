@@ -15,9 +15,9 @@ the time-dependent stress and structural response.
 * Viscoelastic stress equation
 ```math
 \frac{d\sigma}{dt} = \frac{1}{\tau(\phi_a)}\left(-\sigma_{eff} +
-\sigma_y(\phi_a)\sgn(sigma) + \mu_s\eta(\phi_a)\dot\gamma\right)
+\sigma_y(\phi_a)\mathrm{sgn}(sigma) + \mu_s\eta(\phi_a)\dot\gamma\right)
 ```
 * Back stress equation
 ```math
-\frac{dA}{dt} = \dot\gamma_p(1-qA\sgn(\dot\gamma_p))
+\frac{dA}{dt} = \dot\gamma_p(1-qA\mathrm{sgn}(\dot\gamma_p))
 ```
