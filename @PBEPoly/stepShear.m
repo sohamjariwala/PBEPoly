@@ -19,7 +19,7 @@ shear_rate = @(t) finalShearRate;
 % Setting tolerance for ODEs
 tstart = tic;
 odeopts = odeset('RelTol',1e-6,'AbsTol',1e-10,'Stats','off','Events', ...
-    @(t,X) myEvent(t,X,tstart));
+    @(t,X) obj.myEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained
 fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate(t)));

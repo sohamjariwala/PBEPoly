@@ -14,7 +14,7 @@ shear_rate = @(t) gamma_0*omega + gamma_0*omega*cos(omega*t);
 %% Solving the system of ODEs
     % Setting tolerance for ODEs
     tstart = tic;
-    odeopts = odeset('RelTol',1e-6,'AbsTol',1e-6,'Stats','on','Events',@(t,X) myEvent(t,X,tstart));
+    odeopts = odeset('RelTol',1e-6,'AbsTol',1e-6,'Stats','on','Events',@(t,X) obj.myEvent(t,X,tstart));
     % Solving for transient state at specified times
     fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', shear_rate(t)); 
                    obj.elasticStrain(t, X(end), shear_rate(t), X(1:numMoments)')];

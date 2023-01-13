@@ -125,7 +125,7 @@ classdef PBEPoly
         
         function x = tau(obj, logintMu)
         % Relaxation time      
-            x = abs(obj.cnst.sigma_y0/obj.cnst.G_0...
+            x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-3*abs(obj.cnst.sigma_y0/obj.cnst.G_0...
                 ./obj.structure_shear_rate(logintMu));
         end
      
@@ -251,6 +251,18 @@ classdef PBEPoly
                  'Location','best')
              set(gca,'FontSize',20,'LineWidth',2)
              axis([-inf inf 0.1 inf])
+         end
+
+         % Event and helper functions
+         function [values,isterminal,direction] = myEvent(obj, t,X,tstart)
+             %  Don't let t cross zero...a dummy "event" to illustrate how
+             %  one might handle other events in conjunction with the time
+             %  constraint.  Not necessary, but I put it in just in case.
+             values(1) = t;
+             %  Don't let integration go for more than 1 seconds.
+             values(2) = toc(tstart) < 1;
+             isterminal = true(size(values));
+             direction = zeros(size(values));
          end
     end
 end

@@ -16,8 +16,8 @@ numMoments = 5;
 %% Solving the system of ODEs
 % Setting tolerance for ODEs
 tstart = tic;
-odeopts = odeset('RelTol',1e-4,'AbsTol',1e-4,'Stats','off','Events', ...
-    @(t,X) myEvent(t,X,tstart));
+odeopts = odeset('RelTol',1e-2,'AbsTol',1e-4,'Stats','off','Events', ...
+    @(t,X) obj.myEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained
 fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate));
@@ -27,7 +27,7 @@ fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end),
 try
     %% Running the solution
     out.sol = ode15s(fun, ...
-        [0, 1e5*obj.tau(init.logintMu)], ...
+        [0, 1e14*obj.tau(init.logintMu)], ...
         [init.logintMu, init.A, init.stress],...
         odeopts);
 

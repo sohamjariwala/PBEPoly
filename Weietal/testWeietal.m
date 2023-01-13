@@ -68,6 +68,7 @@ for i = length(SSEXP.shear_rate):-1:1
         logintMu(i,:) = out.logintMu;
     else
         out = obj.steadyShear(SSEXP.shear_rate(i), out);
+        out = obj.steadyShearODE(SSEXP.shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
     end
