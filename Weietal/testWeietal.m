@@ -1,9 +1,7 @@
 addpath('../');
 %-------------------------------------------------------------------------------
-parVec =   [3.0139    0.5881   -6.3431    2.2675    0.8844    5.9643   37.1692    0.7826    0.3327];
-parVec = [3.004494456701166   0.600561596186297  -6.296607262914963   2.353498729691915   0.901397663327884   5.923916181131736  37.426447546643523   0.778445789138955   0.325558685153281];
-parVec = [3.0347    0.5891   -6.3744    2.3443    0.8922    5.9131   37.8364  0.7926    0.3274];
-
+parVec = [ 3.000782679665378   0.586427705549209  -6.281773287815507   2.374559909892020   0.901219733300167   5.969838895901450  37.098713938601001   0.789186057792867   0.332318679874229];
+parVec = [3.091690100862115   0.604932033000000  -6.177390351405440   2.300037015000000   0.879680247000000   5.732836850990885  36.539401529999999   0.795985449000000   0.323856153000000];
 obj = PBEPoly;
 %% Steady state
     %% Loading the parameters 
@@ -13,6 +11,8 @@ obj = PBEPoly;
     obj.par.d_f = parVec(4);
     obj.par.porosity = parVec(5);
     obj.par.m_p = exp(parVec(6));
+    obj.par.p = 4;
+
     obj.cnst.G_0 = parVec(7);
     obj.cnst.sigma_y0 = parVec(8);
     obj.cnst.mu_s = parVec(9);
@@ -66,15 +66,17 @@ for i = length(SSEXP.shear_rate):-1:1
         out = obj.steadyShear(SSEXP.shear_rate(i));
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
+        phi_a(i) = out.phi_a;
     else
         out = obj.steadyShear(SSEXP.shear_rate(i), out);
         out = obj.steadyShearODE(SSEXP.shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
+        phi_a(i) = out.phi_a;
     end
 end
 
-SS_error = norm((stress-SSEXP.stress)./mean(SSEXP.stress))...
+SS_error = norm((stress-SSEXP.stress)./(SSEXP.stress))...
     /length(SSEXP.stress);
 
 fprintf("Steady state error = %f\n", SS_error);
@@ -84,10 +86,13 @@ figure
 loglog(SSEXP.shear_rate, stress, SSEXP.shear_rate, SSEXP.stress,'o',...
     'MarkerSize',6,'LineWidth',2)
 xlabel('Shear rate (s^{-1})','FontSize',18);
-ylabel('Stress (Pa)','FontSize',18); 
-grid on;       
-set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
+ylabel('Stress (Pa)','FontSize',18);
+grid on;
 axis([-inf inf 5e-1 100]);
+yyaxis right
+loglog(SSEXP.shear_rate,phi_a,'LineWidth',2);
+ylabel('Volume fraction (-)')
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
 
 distribution
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,9 +111,9 @@ i1f1 = stepShear(obj, i1, f1, StepDownEXP.i0p1f1_t, initial);
 i2f2 = stepShear(obj, i2, f2, StepDownEXP.i0p1f2p5_t, initial);
 i3f3 = stepShear(obj, i3, f3, StepDownEXP.i0p1f5_t, initial);
 
-transient_error = (norm((i1f1.stress-StepDownEXP.i0p1f1_stress)./(StepDownEXP.i0p1f1_stress)) + ...
-                   norm((i2f2.stress-StepDownEXP.i0p1f2p5_stress)./(StepDownEXP.i0p1f2p5_stress)) + ...
-                   norm((i3f3.stress-StepDownEXP.i0p1f5_stress)./(StepDownEXP.i0p1f5_stress)))...
+transient_error = (norm((i1f1.stress-StepDownEXP.i0p1f1_stress)./mean(StepDownEXP.i0p1f1_stress)) + ...
+                   norm((i2f2.stress-StepDownEXP.i0p1f2p5_stress)./mean(StepDownEXP.i0p1f2p5_stress)) + ...
+                   norm((i3f3.stress-StepDownEXP.i0p1f5_stress)./mean(StepDownEXP.i0p1f5_stress)))...
                  ./length(StepDownEXP.i0p1f5_stress)/3;
 
 fprintf("Transient step shear error = %f\n", transient_error);

@@ -1,7 +1,7 @@
 classdef PBEPoly
-% A rheological constitutive model for carbon black via population
-% balances.
-    
+% A rheological constitutive model thixo-elasto-viscoplastic materials
+% via population balance modeling.
+
 %% Parameters
     properties 
        % Parameters to be determined from fitting  
@@ -12,7 +12,8 @@ classdef PBEPoly
             'd_f' , [], ...             % Fractal dimension
             'porosity', [], ...         % R_h/R_a
             'm_p', [],...               % #(particles) in a primary cluster
-            'kh',[]...                  % Backstress modulus parameter
+            'kh',[],...                 % Backstress modulus parameter
+            'p',[]...                   % Exponent for relaxation time
             );
   
        % Constants that will remain fix throughout the computation.
@@ -40,6 +41,7 @@ classdef PBEPoly
             obj.par.porosity = 0.92;
             obj.par.m_p = 468;
             obj.par.kh = 0;
+            obj.par.p = 3;
 
             % Initialize constants 
             obj.cnst.phi_p = 0.03;
@@ -125,7 +127,7 @@ classdef PBEPoly
         
         function x = tau(obj, logintMu)
         % Relaxation time      
-            x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-3*abs(obj.cnst.sigma_y0/obj.cnst.G_0...
+            x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-obj.par.p*abs(obj.cnst.sigma_y0/obj.cnst.G_0...
                 ./obj.structure_shear_rate(logintMu));
         end
      
