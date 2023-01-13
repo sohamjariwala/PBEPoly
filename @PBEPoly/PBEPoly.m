@@ -255,6 +255,47 @@ classdef PBEPoly
              axis([-inf inf 0.1 inf])
          end
 
+         function distribution(obj, caxis, logintMu)
+             %% Distribution generation function for MOMIC
+             % This function generates lognormal distribution for provided physical
+             % moments in log scale.
+             % INPUT: Log scale moments
+             % OUTPUT: distribution function and plot
+
+             c=obj.MOMIC(logintMu);
+
+             gamma2 = exp(logintMu(:,1)).*exp(logintMu(:,2));
+
+             a_p = obj.cnst.a_p;
+             d_f = obj.par.d_f;
+             N = 1000; % Number of points
+
+             figure('Name','Probability density of agglomerate sizes')
+             c_map = colormap(winter(length(caxis)));
+             lnsigmag = zeros(size(caxis));
+             mulnX = zeros(size(caxis));
+             for i = 1:length(caxis)
+                 lnsigmag(i) = sqrt(log(gamma2(i)));
+                 mulnX(i) = 1/sqrt(gamma2(i));
+                 average(i) = exp(mulnX(i) + lnsigmag(i)^2/2);
+                 a = linspace(-8,8,N);
+                 b =  log(10)*(exp(a).^(1/d_f))...
+                     .*(1/(sqrt(2*pi)*lnsigmag(i))...
+                     *exp(-0.5*((a - log(mulnX(i)))/(lnsigmag(i))).^2));
+                 a = 10^6*(exp(a)*obj.fra_moment(1+1/d_f,c(:,i))*2*a_p);
+                 semilogx(a', b', 'Color', c_map(i,:), 'LineWidth',2);
+                 hold on
+             end
+
+             xlabel('$\mathrm{Aggregate\ size\ (diameter)} (\mu m)$','Interpreter','latex');
+             ylabel('$\ln(10) x^{1+1/d_f} f(x)$','Interpreter','latex');
+             axis([-inf, inf, 0, inf])
+             axis square
+             clim([caxis(1) caxis(end)])
+             set(gca,'FontSize',14,'FontWeight','bold','linewidth',2);
+             colorbar, grid on
+         end
+
          % Event and helper functions
          function [values,isterminal,direction] = myEvent(obj, t,X,tstart)
              %  Don't let t cross zero...a dummy "event" to illustrate how
