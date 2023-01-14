@@ -21,3 +21,7 @@ the time-dependent stress and structural response.
 ```math
 \frac{dA}{dt} = \dot\gamma_p(1-qA\mathrm{sgn}(\dot\gamma_p))
 ```
+
+## Sample fits
+![Flow curve (Data from Wei et al. (2018))](figures/Weietal_Flowcurve.png)
+![Transient step down in shear rate (Data from Wei et al. (2018)](figures/Weietal_transient_fits.png)

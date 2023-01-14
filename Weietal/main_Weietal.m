@@ -30,8 +30,7 @@ WeietalSteadyShear; % Fit
 
 WeietalStepDownTransient;  % Fit
 
-% writeDataToOrigin
+writeDataToOrigin
 
 %% Error
-fObj = SS_error + transient_error;
-fprintf("Total error = %f\n", fObj);
+% WeietalErrorCalculation;

@@ -1,5 +1,5 @@
-%shear_rate = logspace(-2,2,20)';
-shear_rate = SSEXP.shear_rate;
+shear_rate = logspace(-2,2,20)';
+% shear_rate = SSEXP.shear_rate;
 stress = zeros(size(shear_rate));
 logintMu = (zeros(length(shear_rate), 5));
 
@@ -12,17 +12,13 @@ for i = length(shear_rate):-1:1
         phi_a(i) = out.phi_a;
     else
         out = obj.steadyShear(shear_rate(i), out);
-%         out = obj.steadyShearODE(shear_rate(i), out);
+        out = obj.steadyShearODE(shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
         phi_a(i) = out.phi_a;
     end
 end
 
-SS_error = norm((stress-SSEXP.stress)./(SSEXP.stress))...
-    /length(SSEXP.stress);
-
-fprintf("Steady state error = %f\n", SS_error);
 
 %% Steady shear plot
 % Plot flow curve and volume fraction
