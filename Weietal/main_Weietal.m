@@ -9,8 +9,8 @@ par = [21.68057883	0.584237984	0.003467759	2.24475337	0.886963815	298.725812 ...
     35.89360516	0.859146331	0.304398054];
 
 
-%% Steady state
-% Loading the parameters 
+%-------------------------------------------------------------------------------
+%% Loading the parameters 
 obj.par.W = par(1);
 obj.par.alfa = par(2);
 obj.par.b_0 = par(3);
@@ -26,11 +26,11 @@ obj.par.p = 4;
 %% Performing calculations 
 loadExperimentalData;
 
-WeietalSteadyShear; % Fit
+WeietalSteadyShear; % Plot Fit
 
-WeietalStepDownTransient;  % Fit
+WeietalStepDownTransient;  % Plot Fits
 
 writeDataToOrigin
 
-%% Error
+%% Error calculation
 % WeietalErrorCalculation;

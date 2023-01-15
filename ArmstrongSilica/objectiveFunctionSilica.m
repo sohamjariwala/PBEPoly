@@ -3,12 +3,13 @@ function fObj = objectiveFunctionSilica(obj, parVec)
 % transient experimental data.
 
 %% Steady state
-    %% Loading the parameters 
-    obj.par.W = exp(parVec(1))-1;
-    obj.par.alfa = parVec(2);
-    obj.par.b_0 = exp(parVec(3));
-    obj.par.porosity = parVec(4);
-
+%% Loading the parameters 
+obj.par.W = exp(parVec(1))-1;
+obj.par.alfa = parVec(2);
+obj.par.b_0 = exp(parVec(3));
+obj.par.porosity = parVec(4);
+obj.par.porosity = parVec(5);
+obj.par.m_p = exp(parVec(6));
 
 %% Steady state experimental data    
 silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
@@ -25,7 +26,6 @@ silica_stepDowni5f0p1 = silica_stepDown(:,5);
 time = silica_stepDownTime;
 
 % Set Step Shear parameters
-tEnd = 100; %s
 iSD1 = 5; fSD1 = 2.5;
 iSD2 = 5; fSD2 = 1.0;
 iSD3 = 5; fSD3 = 0.5;
@@ -67,22 +67,21 @@ logintMu = (zeros(length(shear_rate), 5));
 for i = length(shear_rate):-1:1
     if i == length(shear_rate)
         out = obj.steadyShear(shear_rate(i));
-        EXITFLAG(i) = out.EXITFLAG;
-        stress(i) = out.stress;
-        logintMu(i,:) = out.logintMu;
+        out.A = 1;
     else
-        out = obj.steadyShear(shear_rate(i), out.logintMu);
-        EXITFLAG(i) = out.EXITFLAG;
+        out = obj.steadyShear(shear_rate(i), out);
+    end
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
-    end
 end
+
 
 %% Solving transient step shear equations
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(shear_rate, logintMu, 5);
-initial.gamma_e = obj.gamma_e_max(initial.logintMu);
 initial.stress = interp1(shear_rate, stress,5);
+initial.A = 1;
+
 % Step down
 SD1 = stepShear(obj, iSD1, fSD1, time, initial);
 SD2 = stepShear(obj, iSD2, fSD2, time, initial);
@@ -92,15 +91,15 @@ SD4 = stepShear(obj, iSD4, fSD4, time, initial);
 % Step up
 initial.EXITFLAG = 1;
 initial.logintMu = interp1(shear_rate, logintMu, 0.1);
-initial.gamma_e = obj.gamma_e_max(initial.logintMu);
 initial.stress = interp1(shear_rate, stress,0.1);
 
-% Step down
+% Step up
 SU1 = stepShear(obj, iSU1, fSU1, time, initial);
 SU2 = stepShear(obj, iSU2, fSU2, time, initial);
 SU3 = stepShear(obj, iSU3, fSU3, time, initial);
 SU4 = stepShear(obj, iSU4, fSU4, time, initial);
 SU5 = stepShear(obj, iSU5, fSU5, time, initial);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...

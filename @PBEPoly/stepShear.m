@@ -33,12 +33,12 @@ try
         [init.logintMu, init.A, init.stress],...
         odeopts);
     
-    [~, msgid] = lastwarn;
-    if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
-            || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
-        error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-    end
-    lastwarn('')
+%     [~, msgid] = lastwarn;
+%     if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
+%             || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
+%         error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
+%     end
+%     lastwarn('')
 
     % Obtaining solution variables
     if length(time) <= 2

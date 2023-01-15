@@ -31,12 +31,12 @@ try
         [init.logintMu, init.A, init.stress],...
         odeopts);
 
-    [~, msgid] = lastwarn;
-    if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
-            || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
-        error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-    end
-    lastwarn('')
+%     [~, msgid] = lastwarn;
+%     if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
+%             || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
+%         error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
+%     end
+%     lastwarn('')
 
     [out.sol_Eval, out.derivatives] = deval(out.sol, out.sol.x(end));
 

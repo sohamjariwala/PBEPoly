@@ -1,21 +1,20 @@
 %% Loading the parameters and experimental data set into variables
 addpath('../');
 fluid = PBEPoly;
+par = [0.008104818	0.600796097	0.002721965	2.114096146	0.946537549	316.1413727];
+
 % Changing constants and parameters to ones obtained from monodisperse 
 % solution changed parameters
-fluid.cnst.phi_p = 0.0300;
-fluid.cnst.a_p = 8e-9;
-fluid.cnst.mu_s = 0.41;
-fluid.cnst.G_0 = 560;
-fluid.cnst.sigma_y0 = 11;
+% fluid.cnst.phi_p = 0.0300;
+% fluid.cnst.a_p = 8e-9;
 
-fluid.par.W = 0.0380;
-fluid.par.alfa = 1.2351;
-fluid.par.b_0 = 0.004;
-
-fluid.par.d_f = 2.11;
-fluid.par.porosity = 0.897;
-fluid.par.m_p = 468;
+fluid.par.W = par(1);
+fluid.par.alfa = par(2);
+fluid.par.b_0 = par(3);
+fluid.par.d_f = par(4);
+fluid.par.porosity = par(5);
+fluid.par.m_p = par(6);
+fluid.par.p = 0;
 
 obj = fluid;
     
@@ -124,7 +123,7 @@ initial.EXITFLAG = 1;
 initial.logintMu = interp1(shear_rate, logintMu, 0.1);
 initial.stress = interp1(shear_rate, stress,0.1);
 
-% Step down
+% Step up
 tic; SU1 = stepShear(obj, iSU1, fSU1, time, initial); toc;
 tic; SU2 = stepShear(obj, iSU2, fSU2, time, initial); toc;
 tic; SU3 = stepShear(obj, iSU3, fSU3, time, initial); toc;
@@ -196,7 +195,7 @@ loglog(shear_rate_elastic, elastic_comp_SS, '^', 'LineWidth',2);
 loglog(shear_rate, stress - elastic_comp','LineWidth',2)
 xlabel('Shear rate ($\mathrm{s}^{-1}$)','Interpreter','latex','FontSize',18);
 ylabel('Stress (Pa)','Interpreter','latex','FontSize',18);
-axis([0.01 inf 0.1 inf])
+axis([-inf inf 0.1 inf])
 yyaxis right
 plot(shear_rate, phi_a, '--','LineWidth',2);
 ylabel ( '$\phi_a$','Interpreter','latex','FontSize',18);
@@ -211,7 +210,7 @@ figure
 semilogx(shear_rate,R_gOa_p, 'LineWidth',2);
 xlabel('Shear rate ($\mathrm{s}^{-1}$)','Interpreter','latex','FontSize',18);
 ylabel('$R_a/a_p$', 'Interpreter','latex','FontSize',18);
-axis([0.01 inf -inf inf])
+axis([-inf inf -inf inf])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Plots for transients
