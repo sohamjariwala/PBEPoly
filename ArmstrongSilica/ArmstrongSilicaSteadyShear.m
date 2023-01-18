@@ -36,6 +36,7 @@ loglog(shear_rate_elastic, elastic_comp_SS, '^', 'LineWidth',2);
 loglog(shear_rate, stress - elastic_comp','LineWidth',2)
 xlabel('Shear rate ($\mathrm{s}^{-1}$)','Interpreter','latex','FontSize',18);
 ylabel('Stress (Pa)','Interpreter','latex','FontSize',18);
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
 axis([-inf inf 0.1 inf])
 yyaxis right
 plot(shear_rate, phi_a, '--','LineWidth',2);
@@ -46,9 +47,11 @@ legend('Total Shear Stress (Model)', 'Total Shear Stress (Exp.)', ...
     'Viscous Component (Model)', ...
     'Volume fraction (6 moments approximation)', ...
     'Interpreter','latex','FontSize',10,'location','best');
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
 
 figure('Name', 'Steady Shear | Radius of gyration')
 semilogx(shear_rate,R_gOa_p, 'LineWidth',2);
 xlabel('Shear rate ($\mathrm{s}^{-1}$)','Interpreter','latex','FontSize',18);
 ylabel('$R_a/a_p$', 'Interpreter','latex','FontSize',18);
 axis([-inf inf -inf inf])
+set(gca,'FontSize',14,'FontWeight','bold','linewidth',2, 'FontName','Times');
