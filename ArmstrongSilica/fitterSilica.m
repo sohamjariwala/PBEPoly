@@ -1,11 +1,17 @@
 addpath('../');
 format long
-%% Starting point
-initialPoint = [0.008, 0.62, -7.1062, 2.11, 0.897, 6.1485];
-exploreRange = 0.20;
+rng default
 
+%% Starting point
+initialPoint = [   0.010453871382087   0.849999156000000  -5.060780142936760   2.119061369000000   0.957866855000000   6.254145353393902 0];
+exploreRange = 0.10;
 lb = min([(1-exploreRange)*initialPoint; (1+exploreRange)*initialPoint]);
 ub = max([(1-exploreRange)*initialPoint; (1+exploreRange)*initialPoint]);
+
+lb_max = [ 0.008, 0.40, -9, 2.01, 0.5, 4.6, 0.1];
+ub_max = [5, 0.99, -3, 2.6, 0.99, 6.6, 11];
+lb = max([lb;lb_max]);
+ub = min([ub;ub_max]);
 
 % Initializing the fluid object and functions with default parameter
 fluid = PBEPoly;
@@ -13,7 +19,7 @@ fluid = PBEPoly;
 %% Create the file for parameters
 
 writematrix(["N", "W", "alfa", "b_0", "d_f", "porosity", "m_p", ...
-    "G_0", "sigma_y0","mu_s", "error"], ...
+    "kh", "error"], ...
     "Fits_ArmstrongSilica.csv", ...
     "WriteMode","overwrite", ...
     "Delimiter",",");
@@ -24,6 +30,7 @@ parfor run = 1:Nruns
     ERBEST=100;
     parVec = initialPoint;
     parVecBest = parVec;
+    obj = fluid;
 
     for ijk = 1:ITER
     
@@ -37,7 +44,7 @@ parfor run = 1:Nruns
 
         if ijk<=1/2*ITER
             MULT=.15;
-        elseif ijk>1/2*ITER & ijk <=3/4*ITER
+        elseif ijk>1/2*ITER && ijk <=3/4*ITER
             MULT=.075;
         else
             MULT=.025;
@@ -48,10 +55,8 @@ parfor run = 1:Nruns
         fprintf("%1.8f ",parVecNew);
         fprintf("\n");
 
-        obj = fluid;
-
         % Objective function
-        func = @(x) objectiveFunctionSilica(fluid, x);
+        func = @(x) objectiveFunctionSilica(obj, x);
 
         ERROR_TOT = func(parVecNew);
         fprintf("Current ERROR value = \n")
@@ -67,16 +72,18 @@ parfor run = 1:Nruns
         fprintf("%1.8f ",ERBEST);
         fprintf("\n");
     end
-    x = parVecBest;
 
     % Assigning values to the parameters
-    obj.par.W = exp(x(1))-1;
-    obj.par.alfa = x(2);
-    obj.par.b_0 = exp(x(3));
-    obj.par.d_f = x(4);
-    obj.par.porosity = x(5);
-    obj.par.m_p = exp(x(6));
+    obj.par.W = exp(parVecBest(1))-1;
+    obj.par.alfa = parVecBest(2);
+    obj.par.b_0 = exp(parVecBest(3));
+    obj.par.d_f = parVecBest(4);
+    obj.par.porosity = parVecBest(5);
+    obj.par.m_p = exp(parVecBest(6));
+    obj.par.kh = parVecBest(7);
     
+    disp(obj.par)
+
     N = run;
     W = obj.par.W;
     alfa =  obj.par.alfa;
@@ -84,14 +91,12 @@ parfor run = 1:Nruns
     d_f =  obj.par.d_f;
     porosity =  obj.par.porosity;
     m_p =  obj.par.m_p;
-    G_0 = obj.cnst.G_0;
-    sigma_y0 = obj.cnst.sigma_y0;
-    mu_s = obj.cnst.mu_s;
+    kh = obj.par.kh;
     error = ERBEST;
 
     % Write to file
     writematrix([N, W, alfa, b_0, d_f, porosity, m_p, ...
-    G_0, sigma_y0,mu_s, error], ...
+    kh, error], ...
     "Fits_ArmstrongSilica.csv", ...
     "Delimiter",",", ...
     "WriteMode","append");

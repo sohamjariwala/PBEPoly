@@ -1,23 +1,30 @@
 %% Loading the parameters and experimental data set into variables
 addpath('../');
 fluid = PBEPoly;
-par = [0.008104818	0.600796097	0.002721965	2.114096146	0.946537549	316.1413727];
 
+% par = [0.010508704	0.849999156	0.006340611	2.119061369	0.957866855	520.1646278 0];
+par = [0.010988954	0.808530132	0.005761337	2.095445731	0.952727554	369.6420431	0];
 % Changing constants and parameters to ones obtained from monodisperse 
 % solution changed parameters
-% fluid.cnst.phi_p = 0.0300;
-% fluid.cnst.a_p = 8e-9;
-
-fluid.par.W = par(1);
-fluid.par.alfa = par(2);
-fluid.par.b_0 = par(3);
-fluid.par.d_f = par(4);
-fluid.par.porosity = par(5);
-fluid.par.m_p = par(6);
-fluid.par.p = 0;
-
 obj = fluid;
-    
+
+% obj.par.W = exp(parVec(1))-1;
+% obj.par.alfa = parVec(2);
+% obj.par.b_0 = exp(parVec(3));
+% obj.par.d_f = parVec(4);
+% obj.par.porosity = parVec(5);
+% obj.par.m_p = exp(parVec(6));
+
+obj.par.W = par(1);
+obj.par.alfa = par(2);
+obj.par.b_0 = par(3);
+obj.par.d_f = par(4);
+obj.par.porosity = par(5);
+obj.par.m_p = par(6);
+obj.par.kh = par(7);
+obj.par.p = 3;
+obj.cnst.G_0 = 560;
+
 silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
 silica_elastic_SS = readmatrix('silica.ExpData/silica_elastic_SS.txt');
 shear_rate = silica_SS(:,1);
@@ -87,6 +94,8 @@ for i = length(shear_rate):-1:1
         logintMu(i,:) = out.logintMu;
         elastic_comp(i) = out.sigma_y;
         gamma_dot_p(i) = obj.gamma_dot_p(out.stress,1,out.logintMu,shear_rate(i));
+        phi_max(i) = obj.phi_max(out.logintMu);
+        rel_time(i) = obj.tau(out.logintMu);
 end
 toc;
 
@@ -184,7 +193,7 @@ fObj = SS_error + transient_error_SD + transient_error_SU;
 fprintf("Error in steady state fit = %f\n", SS_error);
 fprintf("Transient step down error = %f\n", transient_error_SD);
 fprintf("Transient step up error = %f\n", transient_error_SU);
-fprintf("Total error = %f\n", fObj);
+fprintf("Total error = %1.15f\n", fObj);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Plot for steady state
 figure

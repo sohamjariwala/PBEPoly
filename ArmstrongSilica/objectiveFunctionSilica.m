@@ -7,9 +7,10 @@ function fObj = objectiveFunctionSilica(obj, parVec)
 obj.par.W = exp(parVec(1))-1;
 obj.par.alfa = parVec(2);
 obj.par.b_0 = exp(parVec(3));
-obj.par.porosity = parVec(4);
+obj.par.d_f = parVec(4);
 obj.par.porosity = parVec(5);
 obj.par.m_p = exp(parVec(6));
+obj.par.kh = parVec(7);
 
 %% Steady state experimental data    
 silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
@@ -59,6 +60,26 @@ silica_stepUpi0p1f0p25 = EXP.silica_stepUpi0p1f0p25;
 
 %% Clear temporary variables
 clear opts
+
+%% UDLAOS
+UDLAOS1_Exp = readmatrix('silica.Expdata/silica_UDLAOS(1,1).txt');
+UDLAOS2_Exp = readmatrix('silica.Expdata/silica_UDLAOS(1,5).txt');
+UDLAOS3_Exp = readmatrix('silica.Expdata/silica_UDLAOS(1,10).txt');
+
+% Extract time
+Exp_time1 = UDLAOS1_Exp(:,1);
+Exp_time2 = UDLAOS2_Exp(:,1);
+Exp_time3 = UDLAOS3_Exp(:,1);
+
+% Extract stress
+Exp_stress1 = UDLAOS1_Exp(:,end);
+Exp_stress2 = UDLAOS2_Exp(:,end);
+Exp_stress3 = UDLAOS3_Exp(:,end);
+
+omega1 = 1; gamma_01 = 1;
+omega2 = 1; gamma_02 = 5;
+omega3 = 1; gamma_03 = 10;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Solving the steady shear equations and collecting the output variables
 stress = zeros(size(shear_rate));
@@ -100,6 +121,28 @@ SU3 = stepShear(obj, iSU3, fSU3, time, initial);
 SU4 = stepShear(obj, iSU4, fSU4, time, initial);
 SU5 = stepShear(obj, iSU5, fSU5, time, initial);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% Solving transient UDLAOS equations
+% initial1.EXITFLAG = 1;
+% initial1.logintMu = interp1(shear_rate, logintMu, gamma_01*omega1);
+% initial1.stress = interp1(shear_rate, stress,gamma_01*omega1);
+% initial1.A = 1;
+% 
+% initial2.EXITFLAG = 1;
+% initial2.logintMu = interp1(shear_rate, logintMu, gamma_02*omega2);
+% initial2.stress = interp1(shear_rate, stress,gamma_02*omega2);
+% initial2.A = 1;
+% 
+% initial3.EXITFLAG = 1;
+% initial3.logintMu = interp1(shear_rate, logintMu, gamma_03*omega3);
+% initial3.stress = interp1(shear_rate, stress,gamma_03*omega3);
+% initial3.A = 1;
+% 
+% 
+% % UDLAOS
+% UDLAOS1 = UDLAOS(obj, gamma_01, omega1, Exp_time1, initial1);
+% UDLAOS2 = UDLAOS(obj, gamma_02, omega2, Exp_time2, initial2);
+% UDLAOS3 = UDLAOS(obj, gamma_03, omega3, Exp_time3, initial3);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
@@ -118,6 +161,11 @@ transient_error_SU = ((norm((SU1.stress-silica_stepUpi0p1f5))./mean(silica_stepU
     (norm((SU5.stress-silica_stepUpi0p1f0p25))./mean(silica_stepUpi0p1f0p25))) ...
     ./length(silica_stepUpTime)/5;
 
+% transient_error_UDLAOS = ...
+%     ((norm((UDLAOS1.stress-Exp_stress1)./mean(Exp_stress1)))./length(Exp_stress1) + ...
+%     (norm((UDLAOS2.stress-Exp_stress2)./mean(Exp_stress2)))./length(Exp_stress2) + ...
+%     (norm((UDLAOS3.stress-Exp_stress3)./mean(Exp_stress3)))./length(Exp_stress3)) ...
+%     /3;
 
 fObj = SS_error + transient_error_SD + transient_error_SU;
 

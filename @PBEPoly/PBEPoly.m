@@ -40,7 +40,7 @@ classdef PBEPoly
             obj.par.d_f = 2.11;
             obj.par.porosity = 0.92;
             obj.par.m_p = 468;
-            obj.par.kh = 0;
+            obj.par.kh = 0.7;
             obj.par.p = 3;
 
             % Initialize constants 
@@ -54,10 +54,9 @@ classdef PBEPoly
             obj.cnst.k_b = 1.3806e-23;
             obj.cnst.T = 298.15;
             obj = inverseOfA(obj);
-            obj.phi_pc =  obj.calculate_phi_pc();
         end
 
-        function x = calculate_phi_pc(obj)
+        function x = get.phi_pc(obj)
         % Minimum allowable volume fraction of aggregates
             x = obj.cnst.phi_p*obj.par.m_p^(3/obj.par.d_f-1);
         end
@@ -110,7 +109,8 @@ classdef PBEPoly
         
         function x = gamma_dot_p(obj,sigma,A,logintMu,shear_rate)
         % Plastic deformation rate
-        x = abs(obj.sigma_eff(sigma,A)/(obj.sigma_y(logintMu)/abs(shear_rate)...
+
+        x = abs(obj.sigma_eff(sigma,logintMu,A)/(obj.sigma_y(logintMu)/abs(shear_rate)...
             +obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
         end
         
@@ -121,13 +121,13 @@ classdef PBEPoly
         
         function x = total_stress_SS(obj, logintMu, shear_rate)
         % Total stress
-           x =  obj.sigma_y(logintMu) ...
+        x = obj.par.kh/obj.cnst.q + obj.sigma_y(logintMu) ...
               + obj.viscous_stress(logintMu, shear_rate);
         end
         
         function x = tau(obj, logintMu)
         % Relaxation time      
-            x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-obj.par.p*abs(obj.cnst.sigma_y0/obj.cnst.G_0...
+            x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-obj.par.p*abs(obj.sigma_y(logintMu)/obj.cnst.G_0...
                 ./obj.structure_shear_rate(logintMu));
         end
      
@@ -216,9 +216,9 @@ classdef PBEPoly
              x = gamma_dot_p - obj.cnst.q*A*abs(gamma_dot_p);
          end
 
-         function x = sigma_eff(obj, sigma, A)
+         function x = sigma_eff(obj, sigma, logintMu, A)
              % SIGMA_EFF Effective stress after kinematic hardening
-             x = sigma - obj.par.kh*A;
+             x = sigma - obj.par.kh*(obj.sigma_y(logintMu)/obj.cnst.sigma_y0)*A;
          end
 
          % Plot functions
@@ -303,7 +303,7 @@ classdef PBEPoly
              %  constraint.  Not necessary, but I put it in just in case.
              values(1) = t;
              %  Don't let integration go for more than 1 seconds.
-             values(2) = toc(tstart) < 2;
+             values(2) = toc(tstart) < 3;
              isterminal = true(size(values));
              direction = zeros(size(values));
          end

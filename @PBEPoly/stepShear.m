@@ -24,7 +24,7 @@ odeopts = odeset('RelTol',1e-6,'AbsTol',1e-10,'Stats','off','Events', ...
 % Simultaneous ODEs to be solved till stationary state is attained
 fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate(t)));
     obj.Adot(t,X(end-1), X(1:numMoments)',X(end),shear_rate(t));
-    obj.shearStressDE(t, X(end), shear_rate(t), X(1:numMoments)')];
+    obj.shearStressDE(t, X(end), shear_rate(t), X(1:numMoments)',X(end-1))];
 
 try
     %% Running the solution
@@ -67,4 +67,3 @@ catch
     return
 end
 end
-

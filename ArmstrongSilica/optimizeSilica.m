@@ -1,90 +1,69 @@
-% Script to optimize the values for parameters in the polydisperse
-% population balance consitutive model.
-clear; clc
-Nfits = 15;
+addpath('../');
+format long
+rng default
 
-% Initial vector of parameters
-numParameters = 4;
+%% Starting point
+initialPoint = [0.08, 0.62, -7.1062, 2.11, 0.897, 6.1485, 0.7];
 
-% Initial guess
-parVec =[0.016293920207754  0.6 -6.863277109520129   0.857693893803876];
+exploreRange = 0.50;
+lb = min([(1-exploreRange)*initialPoint; (1+exploreRange)*initialPoint]);
+ub = max([(1-exploreRange)*initialPoint; (1+exploreRange)*initialPoint]);
 
-lb = min([0.75*parVec; 1.25*parVec]);
-ub = max([0.75*parVec; 1.25*parVec]);
-
-% Fitting using Genetic algorithm
-W = [];
-alfa = W; b_0 = W; d_f = W;
-porosity = W; m_p = W;
-error = W; N = W; G_0 = W; sigma_y0 = W; mu_s = W;
-
-% i =1;
-for i = 1:Nfits
-fprintf("Starting Run %d\n", i);
+lb_max = [ 0.008, 0.40, -9, 2.01, 0.5, 4.6, 0.1];
+ub_max = [5, 0.99, -3, 2.6, 0.99, 6.6, 11];
+lb = max([lb;lb_max]);
+ub = min([ub;ub_max]);
 
 % Initializing the fluid object and functions with default parameter
-fluid(i) = PBEPoly;
-% Changing constants and parameters to ones obtained from monodisperse 
-% solution changed parameters
-fluid(i).cnst.phi_p = 0.0300;
-fluid(i).cnst.a_p = 8e-9;
-fluid(i).cnst.mu_s = 0.41;
-fluid(i).cnst.G_0 = 450;
-fluid(i).cnst.sigma_y0 = 11;
+fluid = PBEPoly;
 
-fluid(i).par.W = 14.1442;
-fluid(i).par.alfa = 0.4096;
-fluid(i).par.b_0 = 0.0015;
-fluid(i).par.d_f = 2.11;
-fluid(i).par.porosity = 0.8192;
-fluid(i).par.m_p = 468;
+%% Create the file for parameters
 
-obj = fluid(i);
-% Objective function
-func = @(x) objectiveFunctionSilica(obj, x);
+writematrix(["N", "W", "alfa", "b_0", "d_f", "porosity", "m_p", ...
+    "kh", "error"], ...
+    "optim_ArmstrongSilica.csv", ...
+    "WriteMode","overwrite", ...
+    "Delimiter",",");
 
-% Genetic algorithm
-    options = optimoptions('ga','UseParallel',true, 'Display', 'iter');
-    [x,fval,exitflag] = ga(func,numParameters,[],[],[],[],lb,ub,[],options);
+%% Fit loop
+    obj = fluid;
+    func = @(x) objectiveFunctionSilica(obj, x);
+%     numParameters = length(lb);
+%     options = optimoptions('ga','UseParallel',true, 'Display', 'iter', 'PlotFcn','gaplotbestf');
+%     [x,fval,exitflag] = ga(func,numParameters,[],[],[],[],lb_max,ub_max,[],options);
 
-% % Parallel tempering
-%    x = ParTemp(func,parVec,1e-2,lb,'MIN',ub,'MAX');
+%     options = optimoptions('simulannealbnd','PlotFcns',...
+%           {@saplotbestx,@saplotbestf,@saplotx,@saplotf}, 'Display', 'iter');
+%     x = simulannealbnd(func,initialPoint,lb_max,ub_max,options);
 
-% % Simulated annealing
-% options = optimoptions('simulannealbnd', 'PlotFcns',...
-%           {@saplotbestx,@saplotbestf,@saplotx,@saplotf},...
-%           'OutputFcn', @myoutSA);
-%    [x,fval,exitflag,output]  = simulannealbnd(func, lb+rand*(ub-lb), lb, ub, options);
+
+x = ParTemp(func,initialPoint,1,lb_max,'MIN',ub_max,'MAX');
+
+    parVecBest = x;
+    % Assigning values to the parameters
+    obj.par.W = exp(parVecBest(1))-1;
+    obj.par.alfa = parVecBest(2);
+    obj.par.b_0 = exp(parVecBest(3));
+    obj.par.d_f = parVecBest(4);
+    obj.par.porosity = parVecBest(5);
+    obj.par.m_p = exp(parVecBest(6));
+    obj.par.kh = parVecBest(7);
     
-% Assigning values to the parameters
-    fluid(i).par.W = exp(x(1))-1;
-    fluid(i).par.alfa = x(2);
-    fluid(i).par.b_0 = exp(x(3));
-    fluid(i).par.porosity = x(4);
+    disp(obj.par)
 
-    N = i;
-    W = fluid(i).par.W;
-    alfa =  fluid(i).par.alfa;
-    b_0 =  fluid(i).par.b_0;
-    porosity =  fluid(i).par.porosity;
-    
-    error = fval;
-    
-    if i ==1
-    % Writing values to file
-    fprintf("Writing the values to file\n");
-    TT = table(N, W, alfa, b_0, porosity, error);
+    N = run;
+    W = obj.par.W;
+    alfa =  obj.par.alfa;
+    b_0 =  obj.par.b_0;
+    d_f =  obj.par.d_f;
+    porosity =  obj.par.porosity;
+    m_p =  obj.par.m_p;
+    kh = obj.par.kh;
+    error = ERBEST;
 
-    writetable(TT,...
-    "SAOptimizedSilica.csv",...
-    'WriteVariableNames',1)
-    else
-       T2 = readtable('SAOptimizedSilica');
-       T3 = table(N, W, alfa, b_0, porosity, error);
-       TT = [T2;T3];
-     writetable(TT,...
-     "SAOptimizedSilica.csv",...
-    'WriteVariableNames',1)
-    end
-
-end
+    % Write to file
+    writematrix([N, W, alfa, b_0, d_f, porosity, m_p, ...
+    kh, error], ...
+    "optim_ArmstrongSilica.csv", ...
+    "Delimiter",",", ...
+    "WriteMode","append");
