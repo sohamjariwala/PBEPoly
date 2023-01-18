@@ -1,6 +1,6 @@
 function eta = etaTrimodal(obj, logintMu)
-% This function calculates the viscosity for polydisperse systems based on
-% the methodology described in Mwasame, Wagner, Beris, "Modeling the 
+% ETATRIMODAL Calculate viscosity for polydisperse colloidal systems
+% based on the methodology described in Mwasame, Wagner, Beris, "Modeling the 
 % effects of polydispersity on the viscosity of noncolloidal hard sphere
 % suspensions"
 

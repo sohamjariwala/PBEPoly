@@ -2,8 +2,8 @@
 addpath('../');
 fluid = PBEPoly;
 
-% par = [0.010508704	0.849999156	0.006340611	2.119061369	0.957866855	520.1646278 0];
 par = [0.010988954	0.808530132	0.005761337	2.095445731	0.952727554	369.6420431	0];
+
 % Changing constants and parameters to ones obtained from monodisperse
 % solution changed parameters
 obj = fluid;

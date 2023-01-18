@@ -17,7 +17,7 @@ numMoments = 5;
 % Setting tolerance for ODEs
 tstart = tic;
 odeopts = odeset('RelTol',1e-2,'AbsTol',1e-4,'Stats','off','Events', ...
-    @(t,X) obj.myEvent(t,X,tstart));
+    @(t,X) obj.odeEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained
 fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate));
@@ -30,13 +30,6 @@ try
         [0, 1e14*obj.tau(init.logintMu)], ...
         [init.logintMu, init.A, init.stress],...
         odeopts);
-
-%     [~, msgid] = lastwarn;
-%     if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
-%             || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
-%         error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-%     end
-%     lastwarn('')
 
     [out.sol_Eval, out.derivatives] = deval(out.sol, out.sol.x(end));
 

@@ -19,7 +19,7 @@ shear_rate = @(t) finalShearRate;
 % Setting tolerance for ODEs
 tstart = tic;
 odeopts = odeset('RelTol',1e-6,'AbsTol',1e-10,'Stats','off','Events', ...
-    @(t,X) obj.myEvent(t,X,tstart));
+    @(t,X) obj.odeEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained
 fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate(t)));
@@ -32,13 +32,6 @@ try
         [0, time(end)], ...
         [init.logintMu, init.A, init.stress],...
         odeopts);
-    
-%     [~, msgid] = lastwarn;
-%     if strcmp(msgid, 'MATLAB:illConditionedMatrix') ...
-%             || strcmp(msgid, 'MATLAB:ode15s:IntegrationTolNotMet')
-%         error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-%     end
-%     lastwarn('')
 
     % Obtaining solution variables
     if length(time) <= 2
