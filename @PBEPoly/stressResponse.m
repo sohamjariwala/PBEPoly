@@ -1,44 +1,62 @@
-    function out = stressResponse(obj, initialShearRate, shearRate, time)
-    % Stress response calculation
+function out = stressResponse(obj, initialShearRate, shearRate, time, initialConditions)
+% Solve for stress and structural variables for arbitrary shear rate function
 
-    % shear rate as a function of time
-    shear_rate = @(t) interp1(time, shearRate, t, 'linear');
+if nargin > 4
+    init.logintMu = initialConditions.logintMu;
+    init.stress = initialConditions.stress;
+    init.A = initialConditions.A;
+else
+    init = obj.steadyShearODE(initialShearRate);
+end
 
-    [stress, phi_a_init, gamma_e_init, EXITFLAG] = steadyShear(obj, initialShearRate);
+% Number of moments to solve for
+numMoments = 5;
 
-    % Scaled number density
-    nu_init = (phi_a_init/obj.cnst.phi_p)^(obj.par.d_f/(obj.par.d_f-3));
+% Step-up and Step-down
+shear_rate = @(t) interp1(time, shearRate, t, 'linear');
 
-    % Setting tolerance for ODEs
-    %odeopts = odeset('RelTol',1e-3,'AbsTol', [1e-6 1e-6], 'Stats','on');
+%% Solving the system of ODEs
+% Setting tolerance for ODEs
+tstart = tic;
+odeopts = odeset('RelTol',1e-3,'AbsTol',1e-4,'Stats','off','Events', ...
+    @(t,X) obj.odeEvent(t,X,tstart));
 
-    % Dimensionless time span
-%     tDim = time./obj.par.b_0;
-    tDim = time;
+% Simultaneous ODEs to be solved till stationary state is attained
+fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end), X(end-1), X(1:numMoments)',shear_rate(t)));
+    obj.Adot(t,X(end-1), X(1:numMoments)',X(end),shear_rate(t));
+    obj.shearStressDE(t, X(end), shear_rate(t), X(1:numMoments)',X(end-1))];
 
-    % Solving for transient state at specified times
-    fun = @(t, X) mwasameModel(obj, t, X, shear_rate(t));
-    sol = ode23tb(fun, tDim, [nu_init, obj.gamma_lin]);
+try
+    %% Running the solution
+    out.sol = ode15s(fun, ...
+        [0, time(end)], ...
+        [init.logintMu, init.A, init.stress],...
+        odeopts);
 
-    try
-        % Obtaining solution variables
-        [sol_Eval derivatives] = deval(sol, tDim);
-        out.phi_a = obj.cnst.phi_p.*(sol_Eval(1,:)'./obj.par.m_p).^(1-3/obj.par.d_f);
-        out.gamma_e =  min( obj.gamma_lin, sol_Eval(2,:))';
-        out.gamma_e_dot = derivatives(2,:)';
-        [msgstr, msgid] = lastwarn;
-        if strcmp(msgid, 'MATLAB:illConditionedMatrix')
-            error('Matrix is singular, close to singular or badly scaled. Results may be inaccurate')
-        end
-        warning('')
-
-    catch
-        warning('Problem evaluating ODE.  Assigning a value of 0.');
-        out.phi_a = 10^6*ones(size(tDim));
-        out.gamma_e = 10^6*ones(size(tDim));
-        warning('')
+    % Obtaining solution variables
+    if length(time) <= 2
+        time = out.sol.x;
     end
-     % Computing overall macroscopic stress
-    out.stress = total_stress(obj, phi_a, gamma_e, shear_rate(time));    
+
+    [out.sol_Eval, out.derivatives] = deval(out.sol, time);
+    out.time = time;
+    out.logintMu = out.sol_Eval(1:numMoments,:)';
+    out.A = out.sol_Eval(end-1,:);
+    out.stress = out.sol_Eval(end,:);
+    for i = 1:length(time)
+        out.phi_a(i) = obj.phi_a(out.logintMu(i,:));
+        out.sigma_y(i) = obj.sigma_y(out.logintMu(i,:));
     end
-    
+    out.EXITFLAG = 1;
+
+catch
+    out.time = time;
+    out.logintMu = 10^6*ones(length(time),1)*init.logintMu;
+    out.A = 10^6*ones(1,length(time));
+    out.stress = 10^6*ones(1,length(time));
+    out.phi_a = 10^6*ones(1,length(time));
+    out.sigma_y = 10^6*ones(1,length(time));
+    out.EXITFLAG = -10;
+    return
+end
+end

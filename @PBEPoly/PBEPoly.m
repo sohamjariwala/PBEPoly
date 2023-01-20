@@ -161,7 +161,7 @@ methods
 
     out = UDLAOS(obj, gamma_0, omega, time, init)
 
-    out = stressResponse(obj, initialShearRate, shearRate, time)
+    out = stressResponse(obj, initialShearRate, shearRate, time, initialConditions)
 
     %% Microstructure
     % MOMIC
