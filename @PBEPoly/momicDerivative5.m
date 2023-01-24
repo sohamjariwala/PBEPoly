@@ -20,7 +20,7 @@ m_p   = obj.par.m_p;     % Number of primary particles in a primary cluster
 
 fra_moment = @(j, c) obj.fra_moment(j, c);
 theta = @(x) obj.theta(x);
-shearcoe=phi_p*alfa*shearRate*obj.cutOff(logintMu)/(2*pi);
+shearcoe=phi_p*alfa*abs(shearRate)*obj.cutOff(logintMu)/(2*pi);
 
 browncoe=phi_p*k_b*T*obj.cutOff(logintMu)...
     /(4*pi*(a_p^3)*mu_s*obj.etaTrimodal(logintMu)*W);

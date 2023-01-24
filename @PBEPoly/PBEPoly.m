@@ -109,8 +109,10 @@ methods
 
     function x = gamma_dot_p(obj,sigma,A,logintMu,shear_rate)
         % GAMMA_DOT_P Plastic deformation rate
+
         x = abs(obj.sigma_eff(sigma,logintMu,A)/(obj.sigma_y(logintMu)/abs(shear_rate)...
             +obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
+
     end
 
     function x = viscous_stress(obj, logintMu, shear_rate)
@@ -120,7 +122,7 @@ methods
 
     function x = total_stress_SS(obj, logintMu, shear_rate)
         % Total stress
-        x = obj.par.kh/obj.cnst.q + obj.sigma_y(logintMu) ...
+        x = (obj.par.kh/obj.cnst.q + obj.sigma_y(logintMu))*sign(shear_rate) ...
             + obj.viscous_stress(logintMu, shear_rate);
     end
 
@@ -132,7 +134,7 @@ methods
 
     function x = Adot(obj, ~, A, logintMu, sigma,shear_rate)
         % ADOT Derivative of kinematic hardening parameter
-        gamma_dot_p = obj.gamma_dot_p(sigma,A,logintMu,shear_rate);
+        gamma_dot_p = sign(shear_rate)*obj.gamma_dot_p(sigma,A,logintMu,shear_rate);
         x = gamma_dot_p - obj.cnst.q*A*abs(gamma_dot_p);
     end
 
@@ -162,6 +164,8 @@ methods
     out = UDLAOS(obj, gamma_0, omega, time, init)
 
     out = stressResponse(obj, initialShearRate, shearRate, time, initialConditions)
+    
+    out = shearReversal(obj, shear_rate, time, initialConditions)
 
     %% Microstructure
     % MOMIC

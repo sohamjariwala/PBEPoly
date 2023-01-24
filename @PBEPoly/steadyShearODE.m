@@ -8,7 +8,7 @@ if nargin > 2
 else
     init.logintMu=obj.InitialCondition;
     init.stress = 300;
-    init.A = 1;
+    init.A = sign(shear_rate);
 end
 
 numMoments = 5;

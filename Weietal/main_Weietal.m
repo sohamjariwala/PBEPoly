@@ -27,6 +27,8 @@ WeietalSteadyShear; % Plot Fit
 
 WeietalStepDownTransient;  % Plot Fits
 
+WeietalShearReversal;
+
 % writeDataToOrigin
 
 %% Error calculation

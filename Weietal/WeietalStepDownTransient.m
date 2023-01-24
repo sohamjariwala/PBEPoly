@@ -20,8 +20,6 @@ initial.logintMu = interp1(shear_rate, logintMu, i4);
 initial.stress = interp1(shear_rate, stress, i4);
 i4f4 = stepShear(obj,i4,f4,StepDownEXP_Test.i3f9_t,initial);
 
-
-
  %% Transient plots
  figure('Name','Step down transients')
     semilogx(StepDownEXP.i0p1f1_t, StepDownEXP.i0p1f1_stress,'ko',...     

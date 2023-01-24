@@ -17,7 +17,7 @@ function out = steadyShear(obj, shear_rate, initialConditions)
     out.stress = total_stress_SS(obj, out.logintMu, shear_rate);
     out.phi_a = obj.phi_a(out.logintMu(end,:));
     out.sigma_y = obj.sigma_y(out.logintMu);
-    out.A = 0;
+    out.A = 1;
 
  catch
     warning('FSOLVE returned bad solution')
