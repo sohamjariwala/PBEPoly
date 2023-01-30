@@ -49,6 +49,24 @@ opts.VariableTypes = ["double","double"];
 
 StepDownEXP_Test = readtable("./experimental_data.xlsx",opts,"UseExcel",false);
 
+%% Flow reversal data
+opts = spreadsheetImportOptions("NumVariables",2);
 
+opts.Sheet = "Fig. 6 flow reversal tests";
+opts.DataRange = "L5:M287";
+
+opts.VariableNames = ["strain", "reduced_stress"];
+
+opts.VariableTypes = ["double","double"];
+EXPrev1 = readtable("./experimental_data.xlsx",opts,"UseExcel",false);
+
+
+opts.Sheet = "Fig. 6 flow reversal tests";
+opts.DataRange = "J5:K287";
+
+opts.VariableNames = ["strain", "reduced_stress"];
+
+opts.VariableTypes = ["double","double"];
+EXPrev1 = readtable("./experimental_data.xlsx",opts,"UseExcel",false);
 
 
