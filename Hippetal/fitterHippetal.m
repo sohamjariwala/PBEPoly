@@ -32,7 +32,7 @@ parfor run = 1:Nruns
     parVecBest = parVec;
     obj = fluid;
     obj.par.kh = 0;
-    obj.cnst.a_p = 20e-9;
+    obj.cnst.a_p = 10e-9;
     obj.par.p = 0;
 
 

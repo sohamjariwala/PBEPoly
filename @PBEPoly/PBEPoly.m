@@ -167,6 +167,8 @@ methods
     
     out = shearReversal(obj, shear_rate, time, initialConditions)
 
+    out = LAOS(obj, gamma_0, omega, time, initialConditions)
+
     %% Microstructure
     % MOMIC
     function x = MOMIC(obj, logintMu)
@@ -278,7 +280,7 @@ methods
         N = 1000; % Number of points
 
         figure('Name','Probability density of agglomerate sizes')
-        c_map = colormap(winter(length(caxis)));
+        c_map = colormap(copper(length(caxis)));
         lnsigmag = zeros(size(caxis));
         mulnX = zeros(size(caxis));
         for i = 1:length(caxis)

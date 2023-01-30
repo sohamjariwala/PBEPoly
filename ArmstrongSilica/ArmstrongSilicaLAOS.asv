@@ -1,0 +1,22 @@
+initial1.EXITFLAG = 1;
+initial1.logintMu = interp1(shear_rate, logintMu, gamma_01*omega1);
+initial1.stress = interp1(shear_rate, stress,gamma_01*omega1);
+initial1.A = 1;
+
+%% LAOS
+% omega = 0.01
+LAOS0p01_1 = LAOS(obj, 1, 0.01, Exp_time1, initial1);
+LAOS0p01_10 = LAOS(obj, 10, 0.01, Exp_time1, initial1);
+LAOS0p01_100 = LAOS(obj, 100, 0.01, Exp_time1, initial1);
+LAOS0p01_1000 = LAOS(obj, 1000, 0.01, Exp_time1, initial1);
+
+% omega = 0.1
+LAOS0p1_1 = LAOS(obj, 1, 0.01, Exp_time1, initial1);
+LAOS0p1_10 = LAOS(obj, 10, 0.1, Exp_time1, initial1);
+LAOS0p1_100 = LAOS(obj, 100, 0.1, Exp_time1, initial1);
+LAOS0p1_1000 = LAOS(obj, 1000, 0.1, Exp_time1, initial1);
+
+
+
+
+

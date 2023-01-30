@@ -6,6 +6,10 @@ par = [0.0053222798922441,0.958558875624029,3.90451317218712e-05,...
     1078.92571493154,10.599495769811,0.0459955288367757,...
     0.0224280851561805,0.00586678127507595]; %# Best fit
 
+par = [0.00532509034911643,0.968681143348009,4.5388112332297e-05, ...
+    2.36906631541588,1.0083722449054,315.905368078551, ...
+    1070.08332857968,10.4231736015752,0.045072528438335,0.0224376912336284];
+
 %% Initial PBEPoly class and load parameters 
 
 obj = PBEPoly;
@@ -21,13 +25,14 @@ obj.par.kh = 0;
 
 obj.cnst.G_0 = par(7);
 obj.cnst.sigma_y_0 = par(8);
-obj.cnst.a_p = 20e-9;
+obj.cnst.a_p = 10e-9;
 obj.cnst.phi_p = par(9);
 obj.cnst.mu_s = par(10);
 
+LoadExperimentalData
 
 HippetalSteadyShear
 
-HippetalStepTransient
+% HippetalStepTransient
 
-HippetalErrorCalculation
+% HippetalErrorCalculation
