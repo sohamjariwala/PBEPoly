@@ -1,9 +1,10 @@
 %% LAOS
 nCycles = 3;
+
 % omega = 0.01
 initial1.EXITFLAG = 1;
-initial1.logintMu = interp1(shear_rate, logintMu, 0.01*1);
-initial1.stress = interp1(shear_rate, stress, 0.01*1);
+initial1.logintMu = interp1(shear_rate, logintMu, 0.01);
+initial1.stress = interp1(shear_rate, stress, 0.01);
 initial1.A = 1;
 
 time = linspace(0, nCycles*pi, 1000)/0.01;

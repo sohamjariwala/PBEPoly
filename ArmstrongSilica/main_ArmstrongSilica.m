@@ -24,6 +24,8 @@ obj.par.m_p = par(6);
 obj.par.kh = par(7);
 obj.par.p = 3;
 obj.cnst.G_0 = 560;
+obj.par.kh = 5;
+obj.cnst.sigma_y0 = obj.cnst.sigma_y0 - obj.par.kh;
 
 loadExperimentalData
 
@@ -34,6 +36,8 @@ ArmstrongSilicaStepDownTransient
 ArmstrongSilicaStepUpTransient
 
 ArmstrongSilicaUDLAOS
+
+ArmstrongSilicaLAOS
 
 writeDataToOrigin
 
