@@ -8,6 +8,7 @@ for i = length(shear_rate):-1:1
         out.A = 1;
     else
         out = obj.steadyShear(shear_rate(i), out);
+        out = obj.steadyShearODE(shear_rate(i), out);
     end
         EXITFLAG(i) = out.EXITFLAG;
         stress(i) = out.stress;

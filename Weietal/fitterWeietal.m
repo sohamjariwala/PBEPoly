@@ -1,6 +1,6 @@
 addpath('../');
 %% Starting point
-initialPoint = [3.125965752659946   0.593094235000000  -5.770599429453542   2.273852404000000   0.885542089000000   5.686169744124814  36.288052170000000   0.819958230000000   0.325495437000000];
+initialPoint = [3.0906    0.6066   -6.1031    2.2279    0.8581    5.8189   36.7396    0.5959    0.3388    0.3000];
 parVecNew = initialPoint;
 exploreRange = 0.10;
 
@@ -29,7 +29,7 @@ fluid.par.p = 4;
 %% Create the file for parameters
 
 writematrix(["N", "W", "alfa", "b_0", "d_f", "porosity", "m_p", ...
-    "G_0", "sigma_y0","mu_s", "error"], ...
+    "G_0", "sigma_y0","mu_s", "kh", "error"], ...
     "Fits_Weietal.csv", ...
     "WriteMode","overwrite", ...
     "Delimiter",",");
@@ -86,6 +86,7 @@ parfor run = 1:Nruns
     obj.cnst.G_0 = x(7);
     obj.cnst.sigma_y0 = x(8);
     obj.cnst.mu_s = x(9);
+    obj.par.kh = x(10);
     
     N = run;
     W = obj.par.W;
@@ -97,11 +98,12 @@ parfor run = 1:Nruns
     G_0 = obj.cnst.G_0;
     sigma_y0 = obj.cnst.sigma_y0;
     mu_s = obj.cnst.mu_s;
+    kh = obj.par.kh;
     error = ERBEST;
 
     % Write to file
     writematrix([N, W, alfa, b_0, d_f, porosity, m_p, ...
-    G_0, sigma_y0,mu_s, error], ...
+    G_0, sigma_y0,mu_s, kh, error], ...
     "Fits_Weietal.csv", ...
     "Delimiter",",", ...
     "WriteMode","append");

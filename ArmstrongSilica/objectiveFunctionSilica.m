@@ -11,6 +11,9 @@ obj.par.d_f = parVec(4);
 obj.par.porosity = parVec(5);
 obj.par.m_p = exp(parVec(6));
 obj.par.kh = parVec(7);
+obj.cnst.G_0 = parVec(8);
+obj.cnst.sigma_y0 = 11 - obj.par.kh;
+
 
 %% Steady state experimental data    
 silica_SS = readmatrix('silica.ExpData/silica_SS.txt');
@@ -146,7 +149,7 @@ SU5 = stepShear(obj, iSU5, fSU5, time, initial);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 SS_error = norm((stress-shear_stress_SS)./(shear_stress_SS))...
-        /length(shear_stress_SS);
+        /length(shear_stress_SS)
     
 transient_error_SD = ((norm((SD1.stress-silica_stepDowni5f2p5))./mean(silica_stepDowni5f2p5)) + ...
     (norm((SD2.stress-silica_stepDowni5f1p0))./mean(silica_stepDowni5f1p0)) + ...

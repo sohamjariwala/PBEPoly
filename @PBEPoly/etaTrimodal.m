@@ -3,8 +3,7 @@ function eta = etaTrimodal(obj, logintMu)
 % based on the methodology described in Mwasame, Wagner, Beris, "Modeling the 
 % effects of polydispersity on the viscosity of noncolloidal hard sphere
 % suspensions"
-
-try 
+ 
     [L, W] = quadrature_solve(obj, logintMu);
 
     d = L(1); D = L(2); DD = L(3);
@@ -22,15 +21,16 @@ try
     % Equation (2) the obj.eta function calls the Krieger-Dougherty
     fu = @(x) log(obj.eta(x, logintMu));
 
-    beta1 = beta(d, D, phi_d, phi_D);
-    beta2 = beta(D, DD, phi_D, phi_DD);
+    beta_star = beta(d,DD, phi_d, phi_DD);
+    alfa_star = (beta_star*phi_D*D + (1 - beta_star)*phi_d*d)/(beta_star*phi_D + (1 - beta_star)*phi_d);
+
+    beta1 = beta(d, alfa_star, phi_d, phi_D + phi_DD);
+    beta2 = beta(alfa_star, DD, phi_d + phi_D, phi_DD);
 
     fTri = fu(beta2*(beta1*phi_d+phi_D)+phi_DD) ...
          + fu(beta1*phi_d+phi_D)*(1-beta2) ...
          + fu(phi_d)*(1-beta1);
     
      eta = real(exp(fTri));
-catch
-    eta = 10^6; 
-end
+
 end

@@ -10,6 +10,10 @@ function fObj = objectiveFunctionWei(obj, parVec)
     obj.cnst.G_0 = parVec(7);
     obj.cnst.sigma_y0 = parVec(8);
     obj.cnst.mu_s = parVec(9);
+    obj.par.kh = parVec(10);
+
+    obj.par
+    obj.cnst
     
 % Objective function calculator for fitting the model to steady state and
 % transient experimental data.

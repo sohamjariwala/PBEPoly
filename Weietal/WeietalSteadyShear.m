@@ -12,7 +12,7 @@ for i = length(shear_rate):-1:1
         phi_a(i) = out.phi_a;
     else
         out = obj.steadyShear(shear_rate(i), out);
-        out = obj.steadyShearODE(shear_rate(i), out);
+%         out = obj.steadyShearODE(shear_rate(i), out);
         stress(i) = out.stress;
         logintMu(i,:) = out.logintMu;
         phi_a(i) = out.phi_a;

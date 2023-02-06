@@ -26,7 +26,7 @@ J = [a1, b1,  0;
 [V,D] = eig(J);
 
 % Weights and Absicissa
-L = [D(1,1); D(2,2); D(3,3)].^(1/2.11)*2*obj.cnst.a_p;
+L = [D(1,1); D(2,2); D(3,3)].^(1/obj.par.d_f)*2*obj.cnst.a_p;
 W = mu(1)*[V(1,1); V(1,2); V(1,3)].^2;
 
 end

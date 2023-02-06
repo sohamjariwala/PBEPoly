@@ -19,7 +19,7 @@ shear_rate = @(t) gamma_0*omega*cos(omega*t);
 %% Solving the system of ODEs
 % Setting tolerance for ODEs
 tstart = tic;
-odeopts = odeset('RelTol',1e-5,'AbsTol',1e-6,'Stats','off','Events', ...
+odeopts = odeset('RelTol',1e-4,'AbsTol',1e-5,'Stats','off','Events', ...
     @(t,X) obj.odeEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained

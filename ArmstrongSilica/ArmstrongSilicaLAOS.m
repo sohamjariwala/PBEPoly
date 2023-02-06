@@ -1,5 +1,5 @@
 %% LAOS
-nCycles = 3;
+nCycles = 12;
 
 % omega = 0.01
 initial1.EXITFLAG = 1;

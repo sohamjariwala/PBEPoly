@@ -107,11 +107,12 @@ methods
             ./(obj.phi_max(logintMu) - obj.phi_pc)).^(2/(3-obj.par.d_f));
     end
 
-    function x = gamma_dot_p(obj,sigma,A,logintMu,shear_rate)
+    function x = gamma_dot_p(obj,sigma,A,logintMu,~)
         % GAMMA_DOT_P Plastic deformation rate
 
-        x = abs(obj.sigma_eff(sigma,logintMu,A)/(obj.sigma_y(logintMu)/abs(shear_rate)...
-            +obj.cnst.mu_s*obj.etaTrimodal(logintMu)));
+        x = abs(obj.sigma_eff(sigma,logintMu,A)) ...
+            /(obj.sigma_y(logintMu)/obj.structure_shear_rate(logintMu) ...
+            +obj.cnst.mu_s*obj.etaTrimodal(logintMu));
 
     end
 
@@ -128,13 +129,15 @@ methods
 
     function x = tau(obj, logintMu)
         % TAU Viscoelastic relaxation time
-        x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-obj.par.p*abs(obj.sigma_y(logintMu)/obj.cnst.G_0...
+        x = abs(obj.cnst.sigma_y0/obj.sigma_y(logintMu))^-obj.par.p ...
+        *abs(obj.sigma_y(logintMu)/obj.cnst.G_0...
             ./obj.structure_shear_rate(logintMu));
     end
 
     function x = Adot(obj, ~, A, logintMu, sigma,shear_rate)
         % ADOT Derivative of kinematic hardening parameter
-        gamma_dot_p = sign(shear_rate)*obj.gamma_dot_p(sigma,A,logintMu,shear_rate);
+        gamma_dot_p = sign(obj.sigma_eff(sigma, logintMu, A)) ...
+        *obj.gamma_dot_p(sigma,A,logintMu,shear_rate);
         x = gamma_dot_p - obj.cnst.q*A*abs(gamma_dot_p);
     end
 
@@ -149,7 +152,7 @@ methods
     x = etaTrimodal(obj, logintMu)
 
     % Shear rate corresponding to steady shear structure
-    x = structure_shear_rate(obj, shearRate, logintMu)
+    x = structure_shear_rate(obj, logintMu)
 
     % Shear stress DE corresponding to the Saramito viscoelastic model
     dX = shearStressDE(obj, t, sigma, gamma_e, shearRate, logintMu)
@@ -310,7 +313,7 @@ methods
         %  ODEEVENT Event function to stop ODE calculation after 3 s
         values(1) = t;
         %  Don't let integration go for more than 3 seconds.
-        values(2) = toc(tstart) < 3;
+        values(2) = toc(tstart) < 10;
         isterminal = true(size(values));
         direction = zeros(size(values));
     end
