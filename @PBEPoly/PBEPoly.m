@@ -170,6 +170,8 @@ methods
     
     out = shearReversal(obj, shear_rate, time, initialConditions)
 
+    out = shearRateJump(obj, init_rate, delta_t, min_rate, final_rate, time, initialConditions)
+
     out = LAOS(obj, gamma_0, omega, time, initialConditions)
 
     %% Microstructure

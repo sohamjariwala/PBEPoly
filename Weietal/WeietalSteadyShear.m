@@ -1,5 +1,5 @@
-% shear_rate = logspace(-2,2,20)';
-shear_rate = SSEXP.shear_rate;
+shear_rate = logspace(-2,2,20)';
+% shear_rate = SSEXP.shear_rate;
 stress = zeros(size(shear_rate));
 logintMu = (zeros(length(shear_rate), 5));
 

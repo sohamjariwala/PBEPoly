@@ -29,7 +29,7 @@ WeietalStepDownTransient;  % Plot Fits
 
 WeietalShearReversal;
 
-writeDataToOrigin
+% writeDataToOrigin
 
 %% Error calculation
 WeietalErrorCalculation;

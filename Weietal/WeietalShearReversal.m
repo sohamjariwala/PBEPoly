@@ -1,5 +1,5 @@
 rev_count = 0;
-for rate = [0.1 0.5 2.5 5 10 20]
+for rate = [0.1 0.5 2.5 5 10 20 0.01]
     initial.EXITFLAG = 1;
     initial.logintMu = interp1(shear_rate, logintMu, rate);
     initial.stress = -interp1(shear_rate, stress, rate);

@@ -18,7 +18,7 @@ shear_rate = @(t) interp1(time, shearRate, t, 'linear');
 %% Solving the system of ODEs
 % Setting tolerance for ODEs
 tstart = tic;
-odeopts = odeset('RelTol',1e-3,'AbsTol',1e-4,'Stats','off','Events', ...
+odeopts = odeset('RelTol',1e-4,'AbsTol',1e-5,'Stats','on','Events', ...
     @(t,X) obj.odeEvent(t,X,tstart));
 
 % Simultaneous ODEs to be solved till stationary state is attained
@@ -26,7 +26,7 @@ fun = @(t, X) [obj.momicDerivative5(t, X(1:numMoments)', obj.gamma_dot_p(X(end),
     obj.Adot(t,X(end-1), X(1:numMoments)',X(end),shear_rate(t));
     obj.shearStressDE(t, X(end), shear_rate(t), X(1:numMoments)',X(end-1))];
 
-try
+% try
     %% Running the solution
     out.sol = ode15s(fun, ...
         [0, time(end)], ...
@@ -49,14 +49,14 @@ try
     end
     out.EXITFLAG = 1;
 
-catch
-    out.time = time;
-    out.logintMu = 10^6*ones(length(time),1)*init.logintMu;
-    out.A = 10^6*ones(1,length(time));
-    out.stress = 10^6*ones(1,length(time));
-    out.phi_a = 10^6*ones(1,length(time));
-    out.sigma_y = 10^6*ones(1,length(time));
-    out.EXITFLAG = -10;
-    return
-end
+% catch
+%     out.time = time;
+%     out.logintMu = 10^6*ones(length(time),1)*init.logintMu;
+%     out.A = 10^6*ones(1,length(time));
+%     out.stress = 10^6*ones(1,length(time));
+%     out.phi_a = 10^6*ones(1,length(time));
+%     out.sigma_y = 10^6*ones(1,length(time));
+%     out.EXITFLAG = -10;
+%     return
+% end
 end
